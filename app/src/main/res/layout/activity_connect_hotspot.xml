@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -14,5 +15,78 @@
         android:text="Start Scan"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/networkStatsAllRx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="90dp"
+        app:layout_constraintEnd_toEndOf="@+id/scan"
+        app:layout_constraintStart_toStartOf="@+id/scan"
+        app:layout_constraintTop_toBottomOf="@+id/scan" />
+
+    <TextView
+        android:id="@+id/networkStatsAllTx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/networkStatsAllRx"
+        app:layout_constraintStart_toStartOf="@+id/networkStatsAllRx"
+        app:layout_constraintTop_toBottomOf="@+id/networkStatsAllRx" />
+
+    <TextView
+        android:id="@+id/networkStatsPackageRx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/networkStatsAllTx"
+        app:layout_constraintStart_toStartOf="@+id/networkStatsAllTx"
+        app:layout_constraintTop_toBottomOf="@+id/networkStatsAllTx" />
+
+    <TextView
+        android:id="@+id/networkStatsPackageTx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/networkStatsPackageRx"
+        app:layout_constraintStart_toStartOf="@+id/networkStatsPackageRx"
+        app:layout_constraintTop_toBottomOf="@+id/networkStatsPackageRx" />
+
+    <TextView
+        android:id="@+id/trafficStatsAllRx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/networkStatsPackageTx"
+        app:layout_constraintStart_toStartOf="@+id/networkStatsPackageTx"
+        app:layout_constraintTop_toBottomOf="@+id/networkStatsPackageTx" />
+
+    <TextView
+        android:id="@+id/trafficStatsAllTx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/trafficStatsAllRx"
+        app:layout_constraintStart_toStartOf="@+id/trafficStatsAllRx"
+        app:layout_constraintTop_toBottomOf="@+id/trafficStatsAllRx" />
+
+    <TextView
+        android:id="@+id/trafficStatsPackageRx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/trafficStatsAllTx"
+        app:layout_constraintStart_toStartOf="@+id/trafficStatsAllTx"
+        app:layout_constraintTop_toBottomOf="@+id/trafficStatsAllTx" />
+
+    <TextView
+        android:id="@+id/trafficStatsPackageTx"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="35dp"
+        app:layout_constraintEnd_toEndOf="@+id/trafficStatsPackageRx"
+        app:layout_constraintStart_toStartOf="@+id/trafficStatsPackageRx"
+        app:layout_constraintTop_toBottomOf="@+id/trafficStatsPackageRx" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
