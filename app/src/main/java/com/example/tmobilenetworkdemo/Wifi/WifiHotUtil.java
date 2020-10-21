@@ -3,9 +3,13 @@ package com.example.tmobilenetworkdemo.Wifi;
 import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.util.Log;
 
+import androidx.annotation.RequiresApi;
+
 import com.example.tmobilenetworkdemo.Model.ConnectDevice;
+import com.example.tmobilenetworkdemo.Wifi.MyOreoWifiManager;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -33,6 +37,8 @@ public class WifiHotUtil {
     private static WifiHotUtil sInstance;
     private static Context mContext;
     private WifiManager mWifiManager;
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    MyOreoWifiManager mMyOreoWifiManager;
 
     public enum WifiSecurityType {
         WIFICIPHER_NOPASS, WIFICIPHER_WPA, WIFICIPHER_WEP, WIFICIPHER_INVALID, WIFICIPHER_WPA2
@@ -40,7 +46,7 @@ public class WifiHotUtil {
 
     private WifiHotUtil(Context context) {
         mContext = context;
-        mWifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        mWifiManager = (WifiManager) context.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
     }
 
     public static WifiHotUtil getInstance(Context c) {
@@ -111,6 +117,63 @@ public class WifiHotUtil {
             e.printStackTrace();
         }
         return setWifiApEnabled();
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void hotspotOreo(boolean turnOn){
+
+        if (mMyOreoWifiManager ==null){
+            mMyOreoWifiManager = new MyOreoWifiManager(mContext);
+        }
+
+        if (turnOn) {
+
+            //this dont work
+            MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
+                @Override
+                public void onTetheringStarted() {
+                    Log.d("shenjianan", "tetheringstarted!");
+                }
+
+                @Override
+                public void onTetheringFailed() {
+
+                }
+            };
+
+            mMyOreoWifiManager.startTethering(callback);
+        } else{
+            mMyOreoWifiManager.stopTethering();
+        }
+
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    public void hotspotOreoWithNameAndPassword(boolean turnOn, String name, String password){
+        if (mMyOreoWifiManager ==null){
+            mMyOreoWifiManager = new MyOreoWifiManager(mContext);
+        }
+
+        if (turnOn) {
+            //this dont work
+            MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
+                @Override
+                public void onTetheringStarted() {
+                    Log.d("shenjianan", "tetheringstarted!");
+                }
+
+                @Override
+                public void onTetheringFailed() {
+
+                }
+            };
+            mMyOreoWifiManager.configureHotspot(name, password);
+
+            mMyOreoWifiManager.startTethering(callback);
+        } else{
+            mMyOreoWifiManager.stopTethering();
+        }
+
     }
 
     //get hotspot status
@@ -273,6 +336,5 @@ public class WifiHotUtil {
         }
         return connectDevices;
     }
-
 }
 

@@ -30,6 +30,7 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.0.0'
     implementation 'androidx.cardview:cardview:1.0.0'
     implementation 'com.skyfishjy.ripplebackground:library:1.0.1'
+    implementation 'com.linkedin.dexmaker:dexmaker:2.25.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'

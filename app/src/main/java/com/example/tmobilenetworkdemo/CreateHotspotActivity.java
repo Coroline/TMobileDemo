@@ -19,9 +19,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
-import com.skyfishjy.library.BuildConfig;
+import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
 
-import java.lang.reflect.Method;
 
 public class CreateHotspotActivity extends AppCompatActivity {
 
@@ -33,6 +32,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private boolean mIsConnectingWifi=false;
     private boolean mIsFirstReceiveConnected=false;
     private WifiAdmin mWifiAdmin;
+    private WifiHotUtil mWifiHotUtil;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -44,18 +44,27 @@ public class CreateHotspotActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         wifiConfiguration = new WifiConfiguration();
-        mWifiAdmin=new WifiAdmin(this);
+        mWifiAdmin = new WifiAdmin(getApplicationContext());
+        mWifiHotUtil = WifiHotUtil.getInstance(getApplicationContext());
+
 
         requestPermissions();
         createHotspot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                int wcgID = mWifiAdmin.connectWifi(SSID.getText().toString(), password.getText().toString(), 1);
-                boolean start = startHotSpot(wcgID != -1);
-                if(start)
+                boolean success = false;
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                    success = mWifiHotUtil.turnOnWifiAp(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2);
+                } else {
+                    //todo: unsynchronized function
+                    mWifiHotUtil.hotspotOreo(true);
+                    success = true;
+                }
+                if(success){
                     Toast.makeText(getApplicationContext(), "Successfully create a hotspot.", Toast.LENGTH_LONG).show();
-                else
+                } else {
                     Toast.makeText(getApplicationContext(), "Fail to create a hotspot.", Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
@@ -68,21 +77,4 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
-
-    public boolean startHotSpot(boolean enable) {
-        wifiManager.setWifiEnabled(false);
-        Method[] mMethods = wifiManager.getClass().getDeclaredMethods();
-        for (Method mMethod : mMethods) {
-            if (mMethod.getName().equals("setWifiApEnabled")) {
-                try {
-                    mMethod.invoke(wifiManager, null, enable);
-                    return true;
-                } catch (Exception ex) {
-                }
-                break;
-            }
-        }
-        return false;
-    }
-
 }
