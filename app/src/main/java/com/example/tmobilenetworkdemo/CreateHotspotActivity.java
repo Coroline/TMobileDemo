@@ -17,6 +17,8 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.annotation.RequiresPermission;
 
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
@@ -57,7 +59,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     success = mWifiHotUtil.turnOnWifiAp(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2);
                 } else {
                     //todo: unsynchronized function
-                    mWifiHotUtil.hotspotOreo(true);
+                    mWifiHotUtil.hotspotOreoWithNameAndPassword(true, SSID.getText().toString(), password.getText().toString());
+//                    mWifiHotUtil.hotspotOreo(true);
                     success = true;
                 }
                 if(success){

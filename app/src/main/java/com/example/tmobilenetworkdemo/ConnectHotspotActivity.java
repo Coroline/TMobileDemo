@@ -81,12 +81,12 @@ public class ConnectHotspotActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private void requestPermissions() {
-        if (!hasPermissionToReadNetworkHistory()) {
-            return;
-        }
-        if (!hasPermissionToReadPhoneStats()) {
-            requestPhoneStateStats();
-        }
+//        if (!hasPermissionToReadNetworkHistory()) {
+//            return;
+//        }
+//        if (!hasPermissionToReadPhoneStats()) {
+//            requestPhoneStateStats();
+//        }
     }
 
 

@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
 
         create = findViewById(R.id.create);
         connect = findViewById(R.id.connect);
+        Log.d("shenjianan", "......");
         settingPermission();
         requestPermissions();
         create.setOnClickListener(new View.OnClickListener() {
@@ -106,9 +107,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void settingPermission() {
-//        mSettingPermission = true;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            Log.d("canwrite", Boolean.toString(Settings.System.canWrite(getApplicationContext())));
             if (!Settings.System.canWrite(getApplicationContext())) {
 //                mSettingPermission = false;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getPackageName()));
