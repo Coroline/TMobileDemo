@@ -2,20 +2,29 @@ package com.example.tmobilenetworkdemo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.AppOpsManager;
+import android.app.Dialog;
 import android.app.usage.NetworkStatsManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.PersistableBundle;
 import android.provider.Settings;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -33,7 +42,7 @@ import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import java.util.List;
 
-public class ConnectHotspotActivity extends AppCompatActivity {
+public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
 
     private Button scan;
     private WifiAdmin mWifiAdmin;
@@ -46,8 +55,12 @@ public class ConnectHotspotActivity extends AppCompatActivity {
     private TextView trafficStatsPackageRx;
     private TextView trafficStatsPackageTx;
     List<ScanResult> scanResult;
+    public static boolean mIsConnectingWifi=false;
+    public static boolean mIsFirstReceiveConnected=false;
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
+
+    private static final String TAG = "ConnectHotspotActivity";
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -72,6 +85,7 @@ public class ConnectHotspotActivity extends AppCompatActivity {
                 initRecyclerView(scanResult);
             }
         });
+
         // result info:
         // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
 
@@ -155,13 +169,126 @@ public class ConnectHotspotActivity extends AppCompatActivity {
     }
 
 
+    // Recycler VIew
     private void initRecyclerView(List<ScanResult> wifiDetailList) {
         RecyclerView recyclerView = findViewById(R.id.wifi_recyclerView);
-        RecyclerViewAdapterNearbyWifi adapter = new RecyclerViewAdapterNearbyWifi(this, wifiDetailList);
+        RecyclerViewAdapterNearbyWifi adapter = new RecyclerViewAdapterNearbyWifi(wifiDetailList, mWifiAdmin, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+
+    @Override
+    public void onWifiSelected(ScanResult selectedWifi) {
+        boolean isLocked = selectedWifi.capabilities.contains("WEP") || selectedWifi.capabilities.contains("PSK");
+        if(!selectedWifi.SSID.equals(mWifiAdmin.getSSID()) && !selectedWifi.BSSID.equals(mWifiAdmin.getBSSID())) {
+            Log.d(TAG, "onItemClick: Selected wifi is not current connected wifi.");
+            WifiConfiguration configuration = mWifiAdmin.isExsits(selectedWifi.SSID);
+            if(configuration == null) {
+                Log.d(TAG, "oClick: wifi has not been configured.");
+                if(isLocked) {
+                    showEditPwdDialog(selectedWifi);
+                } else {
+                    Log.d(TAG, "no password.");
+                    connecting(selectedWifi, null, 1);
+                }
+            } else {
+                Log.d(TAG, "wifi has been configured.");
+                ConnectHotspotActivity.mIsConnectingWifi = true;
+                ConnectHotspotActivity.mIsFirstReceiveConnected = true;
+                // wifiConnecting
+                if(mWifiAdmin.connectConfiguration(configuration)) {
+                    System.out.println("Connection Error.");
+                }
+            }
+        }
+    }
+
+
+    private void showEditPwdDialog(final ScanResult selectedWifi) {
+        View v = LayoutInflater.from(this).inflate(R.layout.dialog_edit_wifi_pwd,null);
+        final EditText editText = v.findViewById(R.id.et_password);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        AlertDialog dialog = builder.
+                setTitle(selectedWifi.SSID).
+                setView(v).
+                setNegativeButton(android.R.string.cancel,null)
+                .setPositiveButton("connect", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        String psd=editText.getText().toString();
+                        if (!psd.isEmpty()) {
+                            if (selectedWifi.capabilities.contains("WEP")) {
+                                connecting(selectedWifi, psd,2);
+                            }else {
+                                connecting(selectedWifi, psd,3);
+                            }
+                        }
+                    }
+                }).create();
+
+        dialog.show();
+
+        final Button positiveTv = dialog.getButton(DialogInterface.BUTTON_POSITIVE);
+        positiveTv.setEnabled(false);
+        positiveTv.setTextColor(getResources().getColor(R.color.accent_grey));
+        editText.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (s.length()<8) {
+                    positiveTv.setTextColor(getResources().getColor(R.color.accent_grey));
+                    positiveTv.setEnabled(false);
+                }else {
+                    positiveTv.setTextColor(getResources().getColor(R.color.colorAccent));
+                    positiveTv.setEnabled(true);
+                }
+            }
+        });
+    }
+
+
+    /**
+     * connect wifi
+     * @param result selected wifi
+     * @param pass wifi password
+     * @param type wifi encryption type：0-no password，1-WEP，2-WPA
+     */
+    private int connecting(ScanResult result, String pass, int type){
+        if (BuildConfig.DEBUG)
+            Log.d(TAG, "connecting: ***********************************************************************");
+        ConnectHotspotActivity.mIsConnectingWifi = true;
+        ConnectHotspotActivity.mIsFirstReceiveConnected = true;
+        int wcgID = mWifiAdmin.connectWifi(result.SSID, pass, type);
+        Log.d(TAG, "connecting: " + wcgID);
+        if (wcgID == -1) {
+            System.out.println("Connection Error.");
+        }
+        return wcgID;
+    }
+
+    // Animation Effects
+//    public void wifiConnecting(String ssid){
+//        llconnected.setVisibility(View.GONE);
+//        mIvShare.setVisibility(View.GONE);
+//
+//        mCvSate.setVisibility(View.VISIBLE);
+//        mRippleBackground.setVisibility(View.VISIBLE);
+//        mTvName.setText(ssid);
+//        mRippleBackground.startRippleAnimation();
+//        AnimationDrawable ad= (AnimationDrawable) mIvCenter.getDrawable();
+//        ad.start();
+//    }
 
 
     private void fillData(String packageName) {
