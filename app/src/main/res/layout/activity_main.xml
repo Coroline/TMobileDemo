@@ -6,24 +6,76 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/create"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@id/connect"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:text="Create Hotspot"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <Button
-        android:id="@+id/connect"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/create"
-        android:text="Connect Hotspot"/>
+        <TextView
+            android:id="@+id/header"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:layout_marginTop="120dp"
+            android:text="Please choose your identity"
+            android:textColor="@color/colorPrimary"
+            android:textSize="28sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
+        <RelativeLayout
+            android:id="@+id/client"
+            android:layout_width="match_parent"
+            android:layout_marginTop="40dp"
+            android:layout_height="120dp">
+
+            <ImageView
+                android:id="@+id/client_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/client" />
+
+            <Button
+                android:id="@+id/create"
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:text="Create Hotspot"
+                android:layout_marginTop="40dp"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                android:background="@drawable/round_button"
+                android:textColor="#FFFFFF"
+                android:layout_toRightOf="@id/client_image"/>
+
+        </RelativeLayout>
+
+
+        <RelativeLayout
+            android:id="@+id/user"
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:layout_marginTop="100dp"
+            android:layout_below="@id/client">
+
+            <ImageView
+                android:id="@+id/user_image"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/user"/>
+
+            <Button
+                android:id="@+id/connect"
+                android:layout_width="165dp"
+                android:layout_height="wrap_content"
+                android:text="Connect Hotspot"
+                android:layout_marginTop="40dp"
+                android:textAllCaps="false"
+                android:textSize="18sp"
+                android:background="@drawable/round_button"
+                android:textColor="#FFFFFF"
+                android:layout_toRightOf="@id/user_image"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

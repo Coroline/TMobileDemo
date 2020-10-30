@@ -9,6 +9,14 @@
     android:paddingBottom="0dp"
     android:paddingRight="10dp">
 
+    <ImageView
+        android:id="@+id/wifi_icon"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="10dp"
+        android:src="@drawable/wifi_signal"/>
+
     <TextView
         android:id="@+id/wifi_name"
         android:layout_width="wrap_content"
@@ -16,12 +24,14 @@
         android:layout_alignParentTop="true"
         android:layout_marginLeft="10dp"
         android:layout_marginTop="10dp"
-        android:textColor="#000000"
-        android:textSize="14sp"
+        android:text="nearby wifi"
+        android:textColor="#6D6D6D"
+        android:textSize="20sp"
         android:textStyle="bold"
-        android:text="nearby wifi"/>
+        android:layout_toEndOf="@id/wifi_icon"
+        android:layout_toRightOf="@id/wifi_icon" />
 
-<!--    <ImageView-->
+    <!--    <ImageView-->
 <!--        android:id="@+id/locationIcon"-->
 <!--        android:layout_width="30dp"-->
 <!--        android:layout_height="30dp"-->

@@ -7,99 +7,79 @@
 
     <Button
         android:id="@+id/scan"
-        android:layout_width="200dp"
+        android:layout_width="203dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="100dp"
-        android:layout_marginLeft="120dp"
-        android:layout_marginTop="100dp"
+        android:layout_marginTop="64dp"
+        android:background="@drawable/round_button"
         android:text="Start Scan"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toTopOf="@+id/wifi_recyclerView"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.0" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="0dp"
+        android:layout_height="300dp"
+        android:layout_marginStart="75dp"
+        android:layout_marginLeft="75dp"
+        android:layout_marginTop="52dp"
+        android:layout_marginEnd="75dp"
+        android:layout_marginRight="75dp"
+        android:src="@drawable/empty"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/scan" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/wifi_recyclerView"
         android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginLeft="54dp"
+        android:layout_marginTop="148dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginRight="54dp"
+        android:layout_marginBottom="50dp"
         android:scrollbars="vertical"
-        android:layout_height="180dp"
-        android:background="#FFFFF0"
-        android:layout_marginTop="30dp"
-        app:layout_constraintEnd_toEndOf="@+id/scan"
-        app:layout_constraintStart_toStartOf="@+id/scan"
-        app:layout_constraintTop_toBottomOf="@+id/scan"
-
-        />
+        app:layout_constraintBottom_toTopOf="@+id/networkStatsAllRx"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/networkStatsAllRx"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="60dp"
-        app:layout_constraintEnd_toEndOf="@+id/wifi_recyclerView"
-        app:layout_constraintStart_toStartOf="@+id/wifi_recyclerView"
+        android:layout_marginStart="54dp"
+        android:layout_marginLeft="54dp"
+        android:layout_marginEnd="54dp"
+        android:layout_marginRight="54dp"
+        android:layout_marginBottom="44dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/wifi_recyclerView" />
 
     <TextView
         android:id="@+id/networkStatsAllTx"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/networkStatsAllRx"
-        app:layout_constraintStart_toStartOf="@+id/networkStatsAllRx"
+        android:layout_marginStart="54dp"
+        android:layout_marginLeft="54dp"
+        android:layout_marginEnd="54dp"
+        android:layout_marginRight="54dp"
+        android:layout_marginBottom="80dp"
+        android:layout_marginTop="30dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/networkStatsAllRx" />
-
-    <TextView
-        android:id="@+id/networkStatsPackageRx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/networkStatsAllTx"
-        app:layout_constraintStart_toStartOf="@+id/networkStatsAllTx"
-        app:layout_constraintTop_toBottomOf="@+id/networkStatsAllTx" />
-
-    <TextView
-        android:id="@+id/networkStatsPackageTx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/networkStatsPackageRx"
-        app:layout_constraintStart_toStartOf="@+id/networkStatsPackageRx"
-        app:layout_constraintTop_toBottomOf="@+id/networkStatsPackageRx" />
-
-    <TextView
-        android:id="@+id/trafficStatsAllRx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/networkStatsPackageTx"
-        app:layout_constraintStart_toStartOf="@+id/networkStatsPackageTx"
-        app:layout_constraintTop_toBottomOf="@+id/networkStatsPackageTx" />
-
-    <TextView
-        android:id="@+id/trafficStatsAllTx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/trafficStatsAllRx"
-        app:layout_constraintStart_toStartOf="@+id/trafficStatsAllRx"
-        app:layout_constraintTop_toBottomOf="@+id/trafficStatsAllRx" />
-
-    <TextView
-        android:id="@+id/trafficStatsPackageRx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/trafficStatsAllTx"
-        app:layout_constraintStart_toStartOf="@+id/trafficStatsAllTx"
-        app:layout_constraintTop_toBottomOf="@+id/trafficStatsAllTx" />
-
-    <TextView
-        android:id="@+id/trafficStatsPackageTx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="35dp"
-        app:layout_constraintEnd_toEndOf="@+id/trafficStatsPackageRx"
-        app:layout_constraintStart_toStartOf="@+id/trafficStatsPackageRx"
-        app:layout_constraintTop_toBottomOf="@+id/trafficStatsPackageRx" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

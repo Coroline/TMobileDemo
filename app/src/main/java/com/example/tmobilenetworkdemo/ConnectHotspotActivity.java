@@ -25,6 +25,7 @@ import android.view.View;
 import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
@@ -40,6 +41,7 @@ import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 import com.example.tmobilenetworkdemo.Wifi.TrafficStatsHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
+import java.util.Date;
 import java.util.List;
 
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
@@ -48,17 +50,20 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private WifiAdmin mWifiAdmin;
     private TextView networkStatsAllRx;
     private TextView networkStatsAllTx;
-    private TextView networkStatsPackageRx;
-    private TextView networkStatsPackageTx;
-    private TextView trafficStatsAllRx;
-    private TextView trafficStatsAllTx;
-    private TextView trafficStatsPackageRx;
-    private TextView trafficStatsPackageTx;
+//    private TextView networkStatsPackageRx;
+//    private TextView networkStatsPackageTx;
+//    private TextView trafficStatsAllRx;
+//    private TextView trafficStatsAllTx;
+//    private TextView trafficStatsPackageRx;
+//    private TextView trafficStatsPackageTx;
+    private RecyclerView wifi_recyclerView;
+    private ImageView imageView2;
     List<ScanResult> scanResult;
     public static boolean mIsConnectingWifi=false;
     public static boolean mIsFirstReceiveConnected=false;
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
+    private long connectionStartTime = 0;
 
     private static final String TAG = "ConnectHotspotActivity";
 
@@ -69,12 +74,19 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         scan = findViewById(R.id.scan);
         networkStatsAllRx = findViewById(R.id.networkStatsAllRx);
         networkStatsAllTx = findViewById(R.id.networkStatsAllTx);
-        networkStatsPackageRx = findViewById(R.id.networkStatsPackageRx);
-        networkStatsPackageTx = findViewById(R.id.networkStatsPackageTx);
-        trafficStatsAllRx = findViewById(R.id.trafficStatsAllRx);
-        trafficStatsAllTx = findViewById(R.id.trafficStatsAllTx);
-        trafficStatsPackageRx = findViewById(R.id.trafficStatsPackageRx);
-        trafficStatsPackageTx = findViewById(R.id.trafficStatsPackageTx);
+//        networkStatsPackageRx = findViewById(R.id.networkStatsPackageRx);
+//        networkStatsPackageTx = findViewById(R.id.networkStatsPackageTx);
+//        trafficStatsAllRx = findViewById(R.id.trafficStatsAllRx);
+//        trafficStatsAllTx = findViewById(R.id.trafficStatsAllTx);
+//        trafficStatsPackageRx = findViewById(R.id.trafficStatsPackageRx);
+//        trafficStatsPackageTx = findViewById(R.id.trafficStatsPackageTx);
+        wifi_recyclerView = findViewById(R.id.wifi_recyclerView);
+        imageView2 = findViewById(R.id.imageView2);
+
+        networkStatsAllRx.setVisibility(View.INVISIBLE);
+        networkStatsAllTx.setVisibility(View.INVISIBLE);
+        wifi_recyclerView.setVisibility(View.INVISIBLE);
+        imageView2.setVisibility(View.VISIBLE);
 
         mWifiAdmin = new WifiAdmin(this);
         scan.setOnClickListener(new View.OnClickListener() {
@@ -83,6 +95,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 scanResult = mWifiAdmin.getScanResultList();
                 System.out.println(scanResult);
                 initRecyclerView(scanResult);
+                networkStatsAllRx.setVisibility(View.VISIBLE);
+                networkStatsAllTx.setVisibility(View.VISIBLE);
+                wifi_recyclerView.setVisibility(View.VISIBLE);
+                imageView2.setVisibility(View.INVISIBLE);
             }
         });
 
@@ -169,10 +185,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     }
 
 
-    // Recycler VIew
+    // Recycler View
     private void initRecyclerView(List<ScanResult> wifiDetailList) {
         RecyclerView recyclerView = findViewById(R.id.wifi_recyclerView);
-        RecyclerViewAdapterNearbyWifi adapter = new RecyclerViewAdapterNearbyWifi(wifiDetailList, mWifiAdmin, this);
+        RecyclerViewAdapterNearbyWifi adapter = new RecyclerViewAdapterNearbyWifi(wifiDetailList, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
@@ -199,9 +215,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 // wifiConnecting
                 if(mWifiAdmin.connectConfiguration(configuration)) {
                     System.out.println("Connection Error.");
+                } else {
+                    connectionStartTime = System.currentTimeMillis();
                 }
             }
         }
+        System.out.println("connectionStartTime value: " + connectionStartTime);
     }
 
 
@@ -267,12 +286,14 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private int connecting(ScanResult result, String pass, int type){
         if (BuildConfig.DEBUG)
             Log.d(TAG, "connecting: ***********************************************************************");
-        ConnectHotspotActivity.mIsConnectingWifi = true;
-        ConnectHotspotActivity.mIsFirstReceiveConnected = true;
+        mIsConnectingWifi = true;
+        mIsFirstReceiveConnected = true;
         int wcgID = mWifiAdmin.connectWifi(result.SSID, pass, type);
         Log.d(TAG, "connecting: " + wcgID);
         if (wcgID == -1) {
             System.out.println("Connection Error.");
+        } else {
+            connectionStartTime = System.currentTimeMillis();
         }
         return wcgID;
     }
@@ -297,10 +318,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
             NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
             fillNetworkStatsAll(networkStatsHelper);
-            fillNetworkStatsPackage(uid, networkStatsHelper);
+//            fillNetworkStatsPackage(uid, networkStatsHelper);
         }
-        fillTrafficStatsAll();
-        fillTrafficStatsPackage(uid);
+//        fillTrafficStatsAll();
+//        fillTrafficStatsPackage(uid);
     }
 
     @TargetApi(Build.VERSION_CODES.M)
@@ -311,27 +332,27 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         networkStatsAllTx.setText(mobileWifiTx / 1000000.0 + " MB");
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {
-        long mobileWifiRx = networkStatsHelper.getPackageRxBytesMobile(this) + networkStatsHelper.getPackageRxBytesWifi();
-        networkStatsPackageRx.setText(mobileWifiRx / 1000000.0 + " MB");
-        networkStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
-        long mobileWifiTx = networkStatsHelper.getPackageTxBytesMobile(this) + networkStatsHelper.getPackageTxBytesWifi();
-        networkStatsPackageTx.setText(mobileWifiTx / 1000000.0 + " MB");
-        networkStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
-    }
-
-    private void fillTrafficStatsAll() {
-        trafficStatsAllRx.setText(TrafficStatsHelper.getAllRxBytes() / 1000000.0 + " MB");
-        trafficStatsAllTx.setText(TrafficStatsHelper.getAllTxBytes() / 1000000.0 + " MB");
-        trafficStatsAllRx.setTextColor(Color.parseColor("#FFFFFF"));
-        trafficStatsAllTx.setTextColor(Color.parseColor("#FFFFFF"));
-    }
-
-    private void fillTrafficStatsPackage(int uid) {
-        trafficStatsPackageRx.setText(TrafficStatsHelper.getPackageRxBytes(uid) / 1000000.0 + " MB");
-        trafficStatsPackageTx.setText(TrafficStatsHelper.getPackageTxBytes(uid) / 1000000.0 + " MB");
-        trafficStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
-        trafficStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
-    }
+//    @TargetApi(Build.VERSION_CODES.M)
+//    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {
+//        long mobileWifiRx = networkStatsHelper.getPackageRxBytesMobile(this) + networkStatsHelper.getPackageRxBytesWifi();
+//        networkStatsPackageRx.setText(mobileWifiRx / 1000000.0 + " MB");
+//        networkStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        long mobileWifiTx = networkStatsHelper.getPackageTxBytesMobile(this) + networkStatsHelper.getPackageTxBytesWifi();
+//        networkStatsPackageTx.setText(mobileWifiTx / 1000000.0 + " MB");
+//        networkStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
+//
+//    private void fillTrafficStatsAll() {
+//        trafficStatsAllRx.setText(TrafficStatsHelper.getAllRxBytes() / 1000000.0 + " MB");
+//        trafficStatsAllTx.setText(TrafficStatsHelper.getAllTxBytes() / 1000000.0 + " MB");
+//        trafficStatsAllRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        trafficStatsAllTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
+//
+//    private void fillTrafficStatsPackage(int uid) {
+//        trafficStatsPackageRx.setText(TrafficStatsHelper.getPackageRxBytes(uid) / 1000000.0 + " MB");
+//        trafficStatsPackageTx.setText(TrafficStatsHelper.getPackageTxBytes(uid) / 1000000.0 + " MB");
+//        trafficStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        trafficStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
 }

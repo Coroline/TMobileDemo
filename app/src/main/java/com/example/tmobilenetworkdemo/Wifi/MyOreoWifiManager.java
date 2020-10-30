@@ -16,9 +16,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 
-/**
- * Created by jonro on 19/03/2018.
- */
 
 @RequiresApi(api = Build.VERSION_CODES.O)
 public class MyOreoWifiManager {
