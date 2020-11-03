@@ -20,6 +20,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.annotation.RequiresPermission;
 
+import com.example.tmobilenetworkdemo.Wifi.MyOnStartTetheringCallback;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
 
@@ -54,19 +55,29 @@ public class CreateHotspotActivity extends AppCompatActivity {
         createHotspot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                boolean success = false;
+                MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
+                    @Override
+                    public void onTetheringStarted() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onTetheringFailed() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Fail to create a hotspot." , Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                };
                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    success = mWifiHotUtil.turnOnWifiAp(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2);
+                    mWifiHotUtil.turnOnWifiApAsync(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2, callback);
                 } else {
-                    //todo: unsynchronized function
-                    mWifiHotUtil.hotspotOreoWithNameAndPassword(true, SSID.getText().toString(), password.getText().toString());
-//                    mWifiHotUtil.hotspotOreo(true);
-                    success = true;
-                }
-                if(success){
-                    Toast.makeText(getApplicationContext(), "Successfully create a hotspot.", Toast.LENGTH_LONG).show();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Fail to create a hotspot.", Toast.LENGTH_LONG).show();
+                    mWifiHotUtil.hotspotOreo(true, callback);
                 }
             }
         });

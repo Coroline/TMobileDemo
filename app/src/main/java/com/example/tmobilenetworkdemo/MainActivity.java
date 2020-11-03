@@ -19,7 +19,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
+        volleyTest();
     }
 
 
@@ -115,5 +119,10 @@ public class MainActivity extends AppCompatActivity {
                 startActivityForResult(intent, MY_PERMISSIONS_MANAGE_WRITE_SETTINGS);
             }
         }
+    }
+
+    private void volleyTest() {
+        NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
+        manager.test();
     }
 }

@@ -83,7 +83,6 @@ public class RecyclerViewAdapterNearbyWifi extends RecyclerView.Adapter<Recycler
         });
     }
 
-
     @Override
     public int getItemCount() {
         return mWifiDetail.size();

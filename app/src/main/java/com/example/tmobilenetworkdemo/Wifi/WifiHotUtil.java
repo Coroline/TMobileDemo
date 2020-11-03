@@ -55,6 +55,15 @@ public class WifiHotUtil {
         return sInstance;
     }
 
+    public void turnOnWifiApAsync(String str, String password, WifiSecurityType Type, MyOnStartTetheringCallback l) {
+        boolean output = turnOnWifiAp(str, password, Type);
+        if (output) {
+            l.onTetheringStarted();
+        } else {
+            l.onTetheringFailed();
+        }
+    }
+
     public boolean turnOnWifiAp(String str, String password, WifiSecurityType Type) {
         String ssid = str;
         //config hotspot info
@@ -120,27 +129,13 @@ public class WifiHotUtil {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void hotspotOreo(boolean turnOn){
+    public void hotspotOreo(boolean turnOn, MyOnStartTetheringCallback callback){
 
         if (mMyOreoWifiManager ==null){
             mMyOreoWifiManager = new MyOreoWifiManager(mContext);
         }
 
         if (turnOn) {
-
-            //this dont work
-            MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
-                @Override
-                public void onTetheringStarted() {
-                    Log.d("shenjianan", "tetheringstarted!");
-                }
-
-                @Override
-                public void onTetheringFailed() {
-
-                }
-            };
-
             mMyOreoWifiManager.startTethering(callback);
         } else{
             mMyOreoWifiManager.stopTethering();
@@ -149,24 +144,12 @@ public class WifiHotUtil {
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public void hotspotOreoWithNameAndPassword(boolean turnOn, String name, String password){
+    public void hotspotOreoWithNameAndPassword(boolean turnOn, String name, String password, MyOnStartTetheringCallback callback){
         if (mMyOreoWifiManager ==null){
             mMyOreoWifiManager = new MyOreoWifiManager(mContext);
         }
 
         if (turnOn) {
-            //this dont work
-            MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
-                @Override
-                public void onTetheringStarted() {
-                    Log.d("shenjianan", "tetheringstarted!");
-                }
-
-                @Override
-                public void onTetheringFailed() {
-
-                }
-            };
             mMyOreoWifiManager.configureHotspot(name, password);
 
             mMyOreoWifiManager.startTethering(callback);

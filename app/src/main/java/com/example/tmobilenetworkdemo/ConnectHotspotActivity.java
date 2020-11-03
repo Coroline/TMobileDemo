@@ -35,6 +35,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Model.WifiDetail;
 import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
 import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
@@ -193,9 +194,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+    public void changeGui(String password) {
+        Log.d(TAG, "password is: " + password);
+    }
 
     @Override
-    public void onWifiSelected(ScanResult selectedWifi) {
+    public void onWifiSelected(final ScanResult selectedWifi) {
         boolean isLocked = selectedWifi.capabilities.contains("WEP") || selectedWifi.capabilities.contains("PSK");
         if(!selectedWifi.SSID.equals(mWifiAdmin.getSSID()) && !selectedWifi.BSSID.equals(mWifiAdmin.getBSSID())) {
             Log.d(TAG, "onItemClick: Selected wifi is not current connected wifi.");
@@ -203,7 +207,23 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             if(configuration == null) {
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
-                    showEditPwdDialog(selectedWifi);
+                    //todo: volley request
+                    NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
+                    manager.checkWifiPassword(selectedWifi.SSID, selectedWifi.BSSID, new NetworkInformationManager.OnRequestInformationListener() {
+                        @Override
+                        public void onSuccess(String password) {
+                            Log.d(TAG, "password is: " + password);
+                            if (selectedWifi.capabilities.contains("WEP")) {
+                                connecting(selectedWifi, password,2);
+                            }else {
+                                connecting(selectedWifi, password,3);
+                            }
+                        }
+                        @Override
+                        public void onFail() {
+                            showEditPwdDialog(selectedWifi);
+                        }
+                    });
                 } else {
                     Log.d(TAG, "no password.");
                     connecting(selectedWifi, null, 1);
