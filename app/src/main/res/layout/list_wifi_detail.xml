@@ -5,7 +5,7 @@
     android:id="@+id/mainLayout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="10dp"
+    android:layout_marginBottom="5dp"
     android:paddingBottom="0dp"
     android:paddingRight="10dp">
 
@@ -26,8 +26,7 @@
         android:layout_marginTop="10dp"
         android:text="nearby wifi"
         android:textColor="#6D6D6D"
-        android:textSize="20sp"
-        android:textStyle="bold"
+        android:textSize="18sp"
         android:layout_toEndOf="@id/wifi_icon"
         android:layout_toRightOf="@id/wifi_icon" />
 

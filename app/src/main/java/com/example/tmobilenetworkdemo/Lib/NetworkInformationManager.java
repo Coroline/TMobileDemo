@@ -51,7 +51,7 @@ public class NetworkInformationManager {
     }
 
     public void test() {
-        StringRequest stringRequest=new StringRequest(serverUrl, new Response.Listener<String>() {
+        StringRequest stringRequest = new StringRequest(serverUrl, new Response.Listener<String>() {
             //正确接受数据之后的回调
             @Override
             public void onResponse(String response) {
@@ -116,6 +116,59 @@ public class NetworkInformationManager {
             }
         };
         //将创建的请求添加到请求队列当中
+        requestQueue.add(stringRequest);
+    }
+
+
+    // Login: Check is the username and password exist in the backend
+    public void checkLogin(final String username, final String password, final OnRequestInformationListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+getPath, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                l.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage(), error);
+                l.onFail();
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put("username", username);
+                params.put("password", password);
+                return params;
+            }
+        };
+        requestQueue.add(stringRequest);
+    }
+
+
+    // Register: Store new user's information into backend
+    public void storeNewUser(final String username, final String password, final String fullName, final OnRequestInformationListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+setPath, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                l.onSuccess(response);
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage(), error);
+                l.onFail();
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put("username", username);
+                params.put("password", password);
+                params.put("fullname", fullName);
+                return params;
+            }
+        };
         requestQueue.add(stringRequest);
     }
 }

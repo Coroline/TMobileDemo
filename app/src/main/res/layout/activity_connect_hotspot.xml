@@ -5,11 +5,63 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ImageView
+        android:id="@+id/connection_logo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="20dp"
+        android:src="@drawable/internet_connection"/>
+
+    <LinearLayout
+        android:id="@+id/linear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/connection_logo">
+
+        <ImageView
+            android:id="@+id/created_wifi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/created_wifi"
+            android:layout_weight="0.3"
+            app:layout_constraintLeft_toLeftOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/current_internet"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No Internet Connection"
+            android:textSize="24sp"
+            android:layout_weight="0.7"
+            android:layout_marginLeft="15dp"
+            app:layout_constraintStart_toEndOf="@+id/created_wifi"
+            app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
+    </LinearLayout>
+
+    <View
+        android:id="@+id/line2"
+        android:layout_height="1px"
+        android:background="#000000"
+        android:layout_width="fill_parent"
+        android:layout_marginTop="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linear"
+        />
+
     <Button
         android:id="@+id/scan"
         android:layout_width="203dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="30dp"
         android:background="@drawable/round_button"
         android:text="Start Scan"
         android:textAllCaps="false"
@@ -18,7 +70,7 @@
         app:layout_constraintBottom_toTopOf="@+id/wifi_recyclerView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/line2"
         app:layout_constraintVertical_bias="0.0" />
 
     <ImageView
@@ -39,47 +91,12 @@
         android:id="@+id/wifi_recyclerView"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginStart="20dp"
-        android:layout_marginLeft="54dp"
-        android:layout_marginTop="148dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginRight="54dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginTop="20dp"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/networkStatsAllRx"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/networkStatsAllRx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="54dp"
-        android:layout_marginLeft="54dp"
-        android:layout_marginEnd="54dp"
-        android:layout_marginRight="54dp"
-        android:layout_marginBottom="44dp"
-        android:layout_marginTop="30dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/wifi_recyclerView" />
-
-    <TextView
-        android:id="@+id/networkStatsAllTx"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="54dp"
-        android:layout_marginLeft="54dp"
-        android:layout_marginEnd="54dp"
-        android:layout_marginRight="54dp"
-        android:layout_marginBottom="80dp"
-        android:layout_marginTop="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/networkStatsAllRx" />
+        app:layout_constraintTop_toBottomOf="@id/scan" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

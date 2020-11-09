@@ -12,7 +12,7 @@
         android:layout_height="160dp"
         android:layout_marginStart="115dp"
         android:layout_marginLeft="115dp"
-        android:layout_marginTop="200dp"
+        android:layout_marginTop="180dp"
         android:src="@drawable/wifi"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

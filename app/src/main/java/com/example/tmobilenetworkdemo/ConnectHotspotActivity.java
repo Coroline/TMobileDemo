@@ -36,10 +36,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
-import com.example.tmobilenetworkdemo.Model.WifiDetail;
-import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
-import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
-import com.example.tmobilenetworkdemo.Wifi.TrafficStatsHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import java.util.Date;
@@ -51,12 +47,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private WifiAdmin mWifiAdmin;
     private TextView networkStatsAllRx;
     private TextView networkStatsAllTx;
-//    private TextView networkStatsPackageRx;
-//    private TextView networkStatsPackageTx;
-//    private TextView trafficStatsAllRx;
-//    private TextView trafficStatsAllTx;
-//    private TextView trafficStatsPackageRx;
-//    private TextView trafficStatsPackageTx;
+    private TextView currentConnection;
     private RecyclerView wifi_recyclerView;
     private ImageView imageView2;
     List<ScanResult> scanResult;
@@ -73,31 +64,24 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_hotspot);
         scan = findViewById(R.id.scan);
-        networkStatsAllRx = findViewById(R.id.networkStatsAllRx);
-        networkStatsAllTx = findViewById(R.id.networkStatsAllTx);
-//        networkStatsPackageRx = findViewById(R.id.networkStatsPackageRx);
-//        networkStatsPackageTx = findViewById(R.id.networkStatsPackageTx);
-//        trafficStatsAllRx = findViewById(R.id.trafficStatsAllRx);
-//        trafficStatsAllTx = findViewById(R.id.trafficStatsAllTx);
-//        trafficStatsPackageRx = findViewById(R.id.trafficStatsPackageRx);
-//        trafficStatsPackageTx = findViewById(R.id.trafficStatsPackageTx);
+        currentConnection = findViewById(R.id.current_internet);
         wifi_recyclerView = findViewById(R.id.wifi_recyclerView);
         imageView2 = findViewById(R.id.imageView2);
-
-        networkStatsAllRx.setVisibility(View.INVISIBLE);
-        networkStatsAllTx.setVisibility(View.INVISIBLE);
         wifi_recyclerView.setVisibility(View.INVISIBLE);
         imageView2.setVisibility(View.VISIBLE);
 
         mWifiAdmin = new WifiAdmin(this);
+        String currentSSID = mWifiAdmin.getSSID();
+        if(currentSSID.equals("NULL"))
+            currentConnection.setText("No Internet Connection");
+        else
+            currentConnection.setText(currentSSID);
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 scanResult = mWifiAdmin.getScanResultList();
                 System.out.println(scanResult);
                 initRecyclerView(scanResult);
-                networkStatsAllRx.setVisibility(View.VISIBLE);
-                networkStatsAllTx.setVisibility(View.VISIBLE);
                 wifi_recyclerView.setVisibility(View.VISIBLE);
                 imageView2.setVisibility(View.INVISIBLE);
             }
@@ -106,7 +90,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         // result info:
         // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
 
-        fillData(getPackageName());
+//        fillData(getPackageName());
     }
 
 
@@ -332,25 +316,25 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //    }
 
 
-    private void fillData(String packageName) {
-        int uid = PackageManagerHelper.getPackageUid(this, packageName);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
-            NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
-            fillNetworkStatsAll(networkStatsHelper);
-//            fillNetworkStatsPackage(uid, networkStatsHelper);
-        }
-//        fillTrafficStatsAll();
-//        fillTrafficStatsPackage(uid);
-    }
-
-    @TargetApi(Build.VERSION_CODES.M)
-    private void fillNetworkStatsAll(NetworkStatsHelper networkStatsHelper) {
-        long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(this) + networkStatsHelper.getAllRxBytesWifi();
-        networkStatsAllRx.setText(mobileWifiRx / 1000000.0 + " MB");
-        long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(this) + networkStatsHelper.getAllTxBytesWifi();
-        networkStatsAllTx.setText(mobileWifiTx / 1000000.0 + " MB");
-    }
+//    private void fillData(String packageName) {
+//        int uid = PackageManagerHelper.getPackageUid(this, packageName);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//            NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
+//            NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
+//            fillNetworkStatsAll(networkStatsHelper);
+////            fillNetworkStatsPackage(uid, networkStatsHelper);
+//        }
+////        fillTrafficStatsAll();
+////        fillTrafficStatsPackage(uid);
+//    }
+//
+//    @TargetApi(Build.VERSION_CODES.M)
+//    private void fillNetworkStatsAll(NetworkStatsHelper networkStatsHelper) {
+//        long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(this) + networkStatsHelper.getAllRxBytesWifi();
+//        networkStatsAllRx.setText(mobileWifiRx / 1000000.0 + " MB");
+//        long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(this) + networkStatsHelper.getAllTxBytesWifi();
+//        networkStatsAllTx.setText(mobileWifiTx / 1000000.0 + " MB");
+//    }
 
 //    @TargetApi(Build.VERSION_CODES.M)
 //    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {

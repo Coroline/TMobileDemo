@@ -27,7 +27,7 @@
         android:usesCleartextTraffic="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.NoActionBar">
         <activity android:name=".SplashActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -38,6 +38,9 @@
         <activity android:name=".MainActivity"/>
         <activity android:name=".CreateHotspotActivity"/>
         <activity android:name=".ConnectHotspotActivity"/>
+        <activity android:name=".RegisterLoginActivity"
+            android:theme="@style/AppTheme.NoActionBar"/>
+        <activity android:name=".CreatedHotspotInformationActivity"/>
 
         <meta-data
             android:name="preloaded_fonts"

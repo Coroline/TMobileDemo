@@ -29,26 +29,26 @@ public class NetworkStatsHelper {
         this.packageUid = packageUid;
     }
 
-    public long getAllRxBytesMobile(Context context) {
+    public long getAllRxBytesMobile(Context context, long startTIme, long endTime) {
         NetworkStats.Bucket bucket;
         try {
             bucket = networkStatsManager.querySummaryForDevice(ConnectivityManager.TYPE_MOBILE,
                     getSubscriberId(context, ConnectivityManager.TYPE_MOBILE),
-                    0,
-                    System.currentTimeMillis());
+                    startTIme,
+                    endTime);
         } catch (RemoteException e) {
             return -1;
         }
         return bucket.getRxBytes();
     }
 
-    public long getAllTxBytesMobile(Context context) {
+    public long getAllTxBytesMobile(Context context, long startTIme, long endTime) {
         NetworkStats.Bucket bucket;
         try {
             bucket = networkStatsManager.querySummaryForDevice(ConnectivityManager.TYPE_MOBILE,
                     getSubscriberId(context, ConnectivityManager.TYPE_MOBILE),
-                    0,
-                    System.currentTimeMillis());
+                    startTIme,
+                    endTime);
         } catch (RemoteException e) {
             return -1;
         }

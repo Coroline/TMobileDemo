@@ -1,6 +1,7 @@
 package com.example.tmobilenetworkdemo;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -61,6 +62,11 @@ public class CreateHotspotActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
+                                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("hotspotName", SSID.toString());
+                                i.putExtra("data", bundle);
+                                startActivity(i);
                             }
                         });
                     }
@@ -79,6 +85,11 @@ public class CreateHotspotActivity extends AppCompatActivity {
                 } else {
                     mWifiHotUtil.hotspotOreo(true, callback);
                 }
+//                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
+//                Bundle bundle = new Bundle();
+//                bundle.putString("hotspotName", SSID.getText().toString());
+//                i.putExtra("data", bundle);
+//                startActivity(i);
             }
         });
     }
