@@ -9,6 +9,7 @@ import android.Manifest;
 import android.app.usage.UsageStatsManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
@@ -20,6 +21,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+import com.example.tmobilenetworkdemo.Receiver.HotSpotIntentReceiver;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -55,7 +57,9 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
-        volleyTest();
+//        volleyTest();
+        IntentFilter intentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGEDD");
+        getApplicationContext().registerReceiver(new HotSpotIntentReceiver(), intentFilter);
     }
 
 

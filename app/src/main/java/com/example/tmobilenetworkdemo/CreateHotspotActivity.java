@@ -64,7 +64,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                                 Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
                                 Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
                                 Bundle bundle = new Bundle();
-                                bundle.putString("hotspotName", SSID.toString());
+                                bundle.putString("hotspotName", SSID.getText().toString());
                                 i.putExtra("data", bundle);
                                 startActivity(i);
                             }

@@ -20,7 +20,7 @@ public class NetworkInformationManager {
     private static Context mContext;
     private static RequestQueue requestQueue;
     private static final String serverUrl = "http://shenjianan97.link:5002";
-    private static final String getPath = "password";
+    private static final String getPath = "login";
     private static final String setPath = "register";
 
     private NetworkInformationManager(Context context) {
