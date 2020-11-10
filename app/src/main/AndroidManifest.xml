@@ -39,7 +39,7 @@
         <activity android:name=".CreateHotspotActivity"/>
         <activity android:name=".ConnectHotspotActivity"/>
         <activity android:name=".RegisterLoginActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
+            android:theme="@style/AppTheme.NoActionBar" android:noHistory="true"/>
         <activity android:name=".CreatedHotspotInformationActivity"/>
 
         <meta-data

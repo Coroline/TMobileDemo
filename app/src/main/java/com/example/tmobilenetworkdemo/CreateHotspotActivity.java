@@ -21,6 +21,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.annotation.RequiresPermission;
 
+import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Wifi.MyOnStartTetheringCallback;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
@@ -33,6 +35,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private EditText password;
     private WifiManager wifiManager;
     private WifiConfiguration wifiConfiguration;
+    private NetworkInformationManager networkInformationManager;
     private boolean mIsConnectingWifi=false;
     private boolean mIsFirstReceiveConnected=false;
     private WifiAdmin mWifiAdmin;
@@ -48,6 +51,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
         password = findViewById(R.id.password);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         wifiConfiguration = new WifiConfiguration();
+        networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
         mWifiAdmin = new WifiAdmin(getApplicationContext());
         mWifiHotUtil = WifiHotUtil.getInstance(getApplicationContext());
 
@@ -56,12 +60,42 @@ public class CreateHotspotActivity extends AppCompatActivity {
         createHotspot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
+//                MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
+//                    @Override
+//                    public void onTetheringStarted() {
+//                        runOnUiThread(new Runnable() {
+//                            public void run() {
+//                                Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
+//                                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
+//                                Bundle bundle = new Bundle();
+//                                bundle.putString("hotspotName", SSID.getText().toString());
+//                                i.putExtra("data", bundle);
+//                                startActivity(i);
+//                            }
+//                        });
+//                    }
+//
+//                    @Override
+//                    public void onTetheringFailed() {
+//                        runOnUiThread(new Runnable() {
+//                            public void run() {
+//                                Toast.makeText(getApplicationContext(), "Fail to create a hotspot." , Toast.LENGTH_LONG).show();
+//                            }
+//                        });
+//                    }
+//                };
+//                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+//                    mWifiHotUtil.turnOnWifiApAsync(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2, callback);
+//                } else {
+//                    mWifiHotUtil.hotspotOreo(true, callback);
+//                }
+                // todo: register information
+                NetworkInformationManager.OnRegisterHotspotListener callback = new NetworkInformationManager.OnRegisterHotspotListener() {
                     @Override
-                    public void onTetheringStarted() {
+                    public void onSuccess() {
                         runOnUiThread(new Runnable() {
                             public void run() {
-                                Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Successfully register a hotspot." , Toast.LENGTH_LONG).show();
                                 Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
                                 Bundle bundle = new Bundle();
                                 bundle.putString("hotspotName", SSID.getText().toString());
@@ -72,19 +106,13 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onTetheringFailed() {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "Fail to create a hotspot." , Toast.LENGTH_LONG).show();
-                            }
-                        });
+                    public void onFail() {
+
                     }
                 };
-                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-                    mWifiHotUtil.turnOnWifiApAsync(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2, callback);
-                } else {
-                    mWifiHotUtil.hotspotOreo(true, callback);
-                }
+
+                networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.username, callback);
+
 //                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
 //                Bundle bundle = new Bundle();
 //                bundle.putString("hotspotName", SSID.getText().toString());

@@ -45,6 +45,9 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         String nameSSID = bundle.getString("hotspotName");
         hotspotName.setText(nameSSID);
 
+        Date day = new Date();
+        startTime = day.getTime();
+
         fillData(getPackageName());
 
         // Dummy data
@@ -88,11 +91,12 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                 SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                 endTime = day.getTime();
 
-                long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(getApplicationContext(), startTime, endTime) + networkStatsHelper.getAllRxBytesWifi();
-                long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(getApplicationContext(), startTime, endTime) + networkStatsHelper.getAllTxBytesWifi();
+                //  + networkStatsHelper.getAllRxBytesWifi()
+                long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(getApplicationContext(), startTime, endTime);
+                // + networkStatsHelper.getAllTxBytesWifi()
+                long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(getApplicationContext(), startTime, endTime);
                 System.out.println(df.format(day) + " " + day.getTime() + " " + startTime + " " + endTime + " " + "\n");
                 System.out.println(mobileWifiRx + mobileWifiTx);
-                startTime = day.getTime();
             }
         }
     }

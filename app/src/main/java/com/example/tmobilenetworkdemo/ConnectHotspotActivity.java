@@ -4,25 +4,20 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
-import android.app.Dialog;
-import android.app.usage.NetworkStatsManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -36,10 +31,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
-import com.example.tmobilenetworkdemo.Model.WifiDetail;
+import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
-import java.util.Date;
 import java.util.List;
 
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
@@ -83,24 +77,25 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
         // Get nearby client list from backend
         NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-        manager.getNearbyClient(currentSSID, new NetworkInformationManager.OnNetworkInformationListener() {
-            @Override
-            public void onSuccess() {
-                // TODO: Assign result list from the network call to nearbyClient ArrayList(line 55)
-            }
 
-            @Override
-            public void onFail() {
-
-            }
-        });
+//        manager.getNearbyClient(currentSSID, new NetworkInformationManager.OnNetworkInformationListener() {
+//            @Override
+//            public void onSuccess() {
+//                // TODO: Assign result list from the network call to nearbyClient ArrayList(line 55)
+//            }
+//
+//            @Override
+//            public void onFail() {
+//
+//            }
+//        });
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 scanResult = mWifiAdmin.getScanResultList();
                 System.out.println(scanResult);
-                nearbyClient.retainAll(scanResult);   // Get intersection of scanned result and backend result
-                initRecyclerView(nearbyClient);
+//                nearbyClient.retainAll(scanResult);   // Get intersection of scanned result and backend result
+                initRecyclerView(scanResult);
                 wifi_recyclerView.setVisibility(View.VISIBLE);
                 imageView2.setVisibility(View.INVISIBLE);
             }
@@ -212,7 +207,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 if(isLocked) {
                     //todo: volley request
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-                    manager.checkWifiPassword(selectedWifi.SSID, selectedWifi.BSSID, new NetworkInformationManager.OnRequestInformationListener() {
+                    manager.checkWifiPassword(selectedWifi.SSID, UserInformationManager.username, new NetworkInformationManager.OnRequestHotspotInfoListener() {
                         @Override
                         public void onSuccess(String password) {
                             Log.d(TAG, "password is: " + password);
@@ -237,9 +232,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 ConnectHotspotActivity.mIsFirstReceiveConnected = true;
                 // wifiConnecting
                 if(mWifiAdmin.connectConfiguration(configuration)) {
-                    System.out.println("Connection Error.");
-                } else {
+                    currentConnection.setText(selectedWifi.SSID);
+                    System.out.println("Connection Success.");
                     connectionStartTime = System.currentTimeMillis();
+                } else {
+                    System.out.println("Connection Error.");
                 }
             }
         }
@@ -316,6 +313,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         if (wcgID == -1) {
             System.out.println("Connection Error.");
         } else {
+            currentConnection.setText(result.SSID);
             connectionStartTime = System.currentTimeMillis();
         }
         return wcgID;

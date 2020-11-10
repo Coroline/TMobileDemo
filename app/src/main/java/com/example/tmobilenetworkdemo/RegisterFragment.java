@@ -15,6 +15,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 
 import java.util.Objects;
 
@@ -85,9 +86,11 @@ public class RegisterFragment extends Fragment {
             public void onClick(View view) {
                 if(validateForm()) {
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
-                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestInformationListener() {
+                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
                         @Override
                         public void onSuccess(String password) {
+                            Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
+                            UserInformationManager.username = username.getText().toString();
                             Intent intent = new Intent();
                             intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
                             startActivity(intent);
@@ -135,7 +138,7 @@ public class RegisterFragment extends Fragment {
             rePassword.setError(null);
         }
 
-        // TODO: Check if the username is unique
+        // Check if the username is unique (already done from server side)
 
         if(pwd.length() < 6) {
             Toast.makeText(getContext(), "Password must be have more than 6 characters.", Toast.LENGTH_LONG).show();

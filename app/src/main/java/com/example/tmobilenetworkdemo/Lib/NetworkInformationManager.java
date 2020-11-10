@@ -20,8 +20,10 @@ public class NetworkInformationManager {
     private static Context mContext;
     private static RequestQueue requestQueue;
     private static final String serverUrl = "http://shenjianan97.link:5002";
-    private static final String getPath = "login";
-    private static final String setPath = "register";
+    private static final String loginPath = "login";
+    private static final String registerUserPath = "registeruser";
+    private static final String registerWifiPath = "registerhotspot";
+    private static final String checkWifiPasswordPath = "checkhotspot";
 
     private NetworkInformationManager(Context context) {
         mContext = context;
@@ -29,14 +31,14 @@ public class NetworkInformationManager {
     }
 
 
-    public interface OnRequestInformationListener {
+    public interface OnRequestHotspotInfoListener {
         // change GUI
         void onSuccess(String password);
         // pop up password input prompt
         void onFail();
     }
 
-    public interface OnRegisterInformationListener {
+    public interface OnRegisterHotspotListener {
         // proceed to next page
         void onSuccess();
         // close wifi hotspot because of network failure
@@ -74,9 +76,8 @@ public class NetworkInformationManager {
         requestQueue.add(stringRequest);
     }
 
-    public void checkWifiPassword(final String ssid, final String bssid, final OnRequestInformationListener l) {
-        String path = "password";
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+getPath, new Response.Listener<String>() {
+    public void checkWifiPassword(final String ssid, final String username, final OnRequestHotspotInfoListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ checkWifiPasswordPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 l.onSuccess(response);
@@ -92,7 +93,7 @@ public class NetworkInformationManager {
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<>();
                 params.put("ssid", ssid);
-                params.put("bssid", bssid);
+                params.put("username", username);
                 return params;
             }
         };
@@ -100,8 +101,8 @@ public class NetworkInformationManager {
         requestQueue.add(stringRequest);
     }
 
-    public void registerWifiInfo(final String ssid, final String bssid, final String password, final OnRegisterInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+setPath, new Response.Listener<String>() {
+    public void registerWifiInfo(final String ssid, final String password, final String username, final OnRegisterHotspotListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerWifiPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 l.onSuccess();
@@ -117,8 +118,8 @@ public class NetworkInformationManager {
             protected Map<String,String> getParams(){
                 Map<String,String> params = new HashMap<>();
                 params.put("ssid", ssid);
-                params.put("bssid", bssid);
                 params.put("password", password);
+                params.put("username", username);
                 return params;
             }
         };
@@ -128,8 +129,8 @@ public class NetworkInformationManager {
 
 
     // Login: Check is the username and password exist in the backend
-    public void checkLogin(final String username, final String password, final OnRequestInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+getPath, new Response.Listener<String>() {
+    public void checkLogin(final String username, final String password, final OnRequestHotspotInfoListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ loginPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 l.onSuccess(response);
@@ -154,8 +155,8 @@ public class NetworkInformationManager {
 
 
     // Register: Store new user's information into backend
-    public void storeNewUser(final String username, final String password, final String fullName, final OnRequestInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+setPath, new Response.Listener<String>() {
+    public void storeNewUser(final String username, final String password, final String fullName, final OnRequestHotspotInfoListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 l.onSuccess(response);
@@ -182,7 +183,7 @@ public class NetworkInformationManager {
 
     // Get nearby client list for future connection
     public void getNearbyClient(final String SSID, final OnNetworkInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+setPath, new Response.Listener<String>() {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
                 l.onSuccess();

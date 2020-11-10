@@ -2,7 +2,6 @@ from flask import Flask, request
 app = Flask(__name__)
 
 wifiInfo = {
-   "5$/hour"+"d4:5d:64:32:c9:f4": "problem?"
 }
 
 userInfo = {
@@ -28,7 +27,7 @@ def location():
       return 'bad request!', 400
 
 @app.route('/login', methods=['POST'])
-def set():
+def login():
    if 'username'in request.form and 'password' in request.form:
       username = request.form["username"]
       password = request.form["password"]
@@ -40,16 +39,52 @@ def set():
    else:
       return 'incorrect format', 400
 
-@app.route('/register', methods=['POST'])
-def get():
+@app.route('/registeruser', methods=['POST'])
+def registeruser():
    if 'username'in request.form and 'password' in request.form and 'fullname' in request.form:
-      print("start registering")
-      print("ssid", request.form["ssid"])
-      print("bssid", request.form["bssid"])
-      print("password", request.form["password"])
-      combine = request.form["ssid"]+request.form["bssid"]
-      wifiInfo[combine] = request.form["password"]
+      if request.form['username'] in userInfo:
+         return 'username already exists!', 400
+      print("start registering user")
+      username = request.form['username']
+      password = request.form['password']
+      fullname = request.form['fullname']
+      print('username', username)
+      print('password', password)
+      print('fullname', fullname)
+      userInfo[username] = {
+         "password": password,
+         "fullname": fullname
+      }
       return 'success'
+   else:
+      return 'bad request!', 400
+
+@app.route('/registerhotspot', methods=['POST'])
+def registerhotspot():
+   if 'ssid'in request.form and 'password' in request.form and 'username' in request.form:
+      print("start registering hotspot")
+      ssid = request.form['ssid']
+      password = request.form['password']
+      wifiInfo[ssid] = {
+         "password": password,
+         "usage": 0
+      }
+      print(wifiInfo)
+      return 'success'
+   else:
+      return 'bad request!', 400
+
+@app.route('/checkhotspot', methods=['POST'])
+def checkhotspot():
+   if 'ssid'in request.form and 'username' in request.form:
+      print("checking hotspot information")
+      ssid = request.form['ssid']
+      if ssid not in wifiInfo:
+         print("no information!")
+         return 'no information!', 400
+      username = request.form['username']
+      print(wifiInfo[ssid])
+      return wifiInfo[ssid]["password"]
    else:
       return 'bad request!', 400
 
