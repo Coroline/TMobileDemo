@@ -36,6 +36,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+import com.example.tmobilenetworkdemo.Model.WifiDetail;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import java.util.Date;
@@ -51,6 +52,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private RecyclerView wifi_recyclerView;
     private ImageView imageView2;
     List<ScanResult> scanResult;
+    List<ScanResult> nearbyClient;
+    private String currentSSID;
     public static boolean mIsConnectingWifi=false;
     public static boolean mIsFirstReceiveConnected=false;
 
@@ -71,17 +74,33 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         imageView2.setVisibility(View.VISIBLE);
 
         mWifiAdmin = new WifiAdmin(this);
-        String currentSSID = mWifiAdmin.getSSID();
+        currentSSID = mWifiAdmin.getSSID();
         if(currentSSID.equals("NULL"))
             currentConnection.setText("No Internet Connection");
         else
             currentConnection.setText(currentSSID);
+
+
+        // Get nearby client list from backend
+        NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
+        manager.getNearbyClient(currentSSID, new NetworkInformationManager.OnNetworkInformationListener() {
+            @Override
+            public void onSuccess() {
+                // TODO: Assign result list from the network call to nearbyClient ArrayList(line 55)
+            }
+
+            @Override
+            public void onFail() {
+
+            }
+        });
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 scanResult = mWifiAdmin.getScanResultList();
                 System.out.println(scanResult);
-                initRecyclerView(scanResult);
+                nearbyClient.retainAll(scanResult);   // Get intersection of scanned result and backend result
+                initRecyclerView(nearbyClient);
                 wifi_recyclerView.setVisibility(View.VISIBLE);
                 imageView2.setVisibility(View.INVISIBLE);
             }

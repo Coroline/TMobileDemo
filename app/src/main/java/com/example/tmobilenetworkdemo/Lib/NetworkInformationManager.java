@@ -43,6 +43,13 @@ public class NetworkInformationManager {
         void onFail();
     }
 
+    public interface OnNetworkInformationListener {
+        // proceed to next page
+        void onSuccess();
+        // close wifi hotspot because of network failure
+        void onFail();
+    }
+
 
     public static NetworkInformationManager getInstance(Context c) {
         if (null == sInstance)
@@ -166,6 +173,31 @@ public class NetworkInformationManager {
                 params.put("username", username);
                 params.put("password", password);
                 params.put("fullname", fullName);
+                return params;
+            }
+        };
+        requestQueue.add(stringRequest);
+    }
+
+
+    // Get nearby client list for future connection
+    public void getNearbyClient(final String SSID, final OnNetworkInformationListener l) {
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+setPath, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                l.onSuccess();
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage(), error);
+                l.onFail();
+            }
+        }){
+            @Override
+            protected Map<String,String> getParams(){
+                Map<String,String> params = new HashMap<>();
+                params.put("SSID", SSID);
                 return params;
             }
         };
