@@ -90,7 +90,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
 //                    mWifiHotUtil.hotspotOreo(true, callback);
 //                }
                 // todo: register information
-                NetworkInformationManager.OnRegisterHotspotListener callback = new NetworkInformationManager.OnRegisterHotspotListener() {
+                NetworkInformationManager.OnNetworkInformationListener callback = new NetworkInformationManager.OnNetworkInformationListener() {
                     @Override
                     public void onSuccess() {
                         runOnUiThread(new Runnable() {

@@ -7,19 +7,24 @@ import androidx.core.content.ContextCompat;
 
 import android.Manifest;
 import android.app.usage.UsageStatsManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Receiver.HotSpotIntentReceiver;
 
@@ -31,6 +36,8 @@ public class MainActivity extends AppCompatActivity {
     private Button create;
     private Button connect;
     static final int MY_PERMISSIONS_MANAGE_WRITE_SETTINGS = 100 ;
+    GPSTracking locationService;
+    ServiceConnection conn;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -57,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(i);
             }
         });
-//        volleyTest();
         IntentFilter intentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGEDD");
         getApplicationContext().registerReceiver(new HotSpotIntentReceiver(), intentFilter);
     }
@@ -66,17 +72,14 @@ public class MainActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestPermissions() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
-            Log.d("shenjianan", "????");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED){
-            Log.d("shenjianan", "xxxx");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.READ_PHONE_STATE}, 1);
         }
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_NETWORK_STATE) != PackageManager.PERMISSION_GRANTED){
-            Log.d("shenjianan", "xxxx");
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_NETWORK_STATE}, 1);
         }
@@ -118,15 +121,9 @@ public class MainActivity extends AppCompatActivity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             Log.d("canwrite", Boolean.toString(Settings.System.canWrite(getApplicationContext())));
             if (!Settings.System.canWrite(getApplicationContext())) {
-//                mSettingPermission = false;
                 Intent intent = new Intent(Settings.ACTION_MANAGE_WRITE_SETTINGS, Uri.parse("package:" + getPackageName()));
                 startActivityForResult(intent, MY_PERMISSIONS_MANAGE_WRITE_SETTINGS);
             }
         }
-    }
-
-    private void volleyTest() {
-        NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-        manager.test();
     }
 }

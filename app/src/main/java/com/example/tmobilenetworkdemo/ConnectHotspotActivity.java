@@ -207,7 +207,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 if(isLocked) {
                     //todo: volley request
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-                    manager.checkWifiPassword(selectedWifi.SSID, UserInformationManager.username, new NetworkInformationManager.OnRequestHotspotInfoListener() {
+                    manager.checkWifiPassword(selectedWifi.SSID, UserInformationManager.username, new NetworkInformationManager.OnNetworkResultInfoListener() {
                         @Override
                         public void onSuccess(String password) {
                             Log.d(TAG, "password is: " + password);

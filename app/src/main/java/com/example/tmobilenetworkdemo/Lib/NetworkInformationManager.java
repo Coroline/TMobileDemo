@@ -1,6 +1,7 @@
 package com.example.tmobilenetworkdemo.Lib;
 
 import android.content.Context;
+import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.util.Log;
 
 import com.android.volley.Request;
@@ -12,6 +13,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
@@ -24,7 +26,7 @@ public class NetworkInformationManager {
     private static Context mContext;
     private static RequestQueue requestQueue;
     private static final String serverUrl = "http://34.216.147.160:80";
-    private static final String loginPath = "login";
+    private static final String loginPath = "login-app-user";
     private static final String registerUserPath = "register-app-user";
     private static final String registerWifiPath = "registerhotspot";
     private static final String checkWifiPasswordPath = "checkhotspot";
@@ -35,20 +37,20 @@ public class NetworkInformationManager {
     }
 
 
-    public interface OnRequestHotspotInfoListener {
+    public interface OnNetworkResultInfoListener {
         // change GUI
-        void onSuccess(String password);
+        void onSuccess(String result);
         // pop up password input prompt
         void onFail();
     }
-
-    public interface OnRegisterHotspotListener {
-        // proceed to next page
-        void onSuccess();
-        // close wifi hotspot because of network failure
-        void onFail();
-    }
-
+//
+//    public interface OnRegisterHotspotListener {
+//        // proceed to next page
+//        void onSuccess();
+//        // close wifi hotspot because of network failure
+//        void onFail();
+//    }
+//
     public interface OnRegisterUserListener {
         // proceed to next page
         void onSuccess();
@@ -86,7 +88,7 @@ public class NetworkInformationManager {
         requestQueue.add(stringRequest);
     }
 
-    public void checkWifiPassword(final String ssid, final String username, final OnRequestHotspotInfoListener l) {
+    public void checkWifiPassword(final String ssid, final String username, final OnNetworkResultInfoListener l) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ checkWifiPasswordPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -111,7 +113,7 @@ public class NetworkInformationManager {
         requestQueue.add(stringRequest);
     }
 
-    public void registerWifiInfo(final String ssid, final String password, final String username, final OnRegisterHotspotListener l) {
+    public void registerWifiInfo(final String ssid, final String password, final String username, final OnNetworkInformationListener l) {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerWifiPath, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -139,77 +141,51 @@ public class NetworkInformationManager {
 
 
     // Login: Check is the username and password exist in the backend
-    public void checkLogin(final String username, final String password, final OnRequestHotspotInfoListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ loginPath, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                l.onSuccess(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-                l.onFail();
-            }
-        }){
-            @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
-                params.put("username", username);
-                params.put("password", password);
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
-    }
+//    public void checkLogin(final String username, final String password, final OnRequestHotspotInfoListener l) {
+//        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ loginPath, new Response.Listener<String>() {
+//            @Override
+//            public void onResponse(String response) {
+//                l.onSuccess(response);
+//            }
+//        }, new Response.ErrorListener() {
+//            @Override
+//            public void onErrorResponse(VolleyError error) {
+//                Log.e(TAG, error.getMessage(), error);
+//                l.onFail();
+//            }
+//        }){
+//            @Override
+//            protected Map<String,String> getParams(){
+//                Map<String,String> params = new HashMap<>();
+//                params.put("username", username);
+//                params.put("password", password);
+//                return params;
+//            }
+//        };
+//        requestQueue.add(stringRequest);
+//    }
 
 
-    // Register: Store new user's information into backend
-    public void storeNewUser(final String username, final String password, final String fullName, final OnRequestHotspotInfoListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                l.onSuccess(response);
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-                l.onFail();
-            }
-        }){
-            @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
-                params.put("username", username);
-                params.put("password", password);
-                params.put("fullname", fullName);
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
-    }
+    /**
+     * Register
+     * @param username username for register
+     * @param password password for register
+     * @param l interface for callback functions
+     * @throws JSONException
+     */
+    public void registerUser(final String username, final String password, final OnNetworkInformationListener l) throws JSONException {
 
-    public void registerUser(final String username, final String password, final OnRegisterUserListener l) {
-
-        Map<String, String> credential = new HashMap<String, String>();
+        JSONObject credential = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         credential.put("username", username);
         credential.put("password", password);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("credential", credential);
-
-        Log.d("map", map.toString());
-        JSONObject jsonObject = new JSONObject(map);
-
-
-        Log.e(TAG, "getdata: " + jsonObject.toString());
+        jsonObject.put("credential", credential);
 
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d(TAG, "response -> " + response.toString());
+                        l.onSuccess();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -223,7 +199,52 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Connection", "keep-alive");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
 
+
+    /**
+     * Login network request
+     * @param username username for login
+     * @param password password for login
+     * @param l interface for callback functions
+     * @throws JSONException
+     */
+    public void loginUser(final String username, final String password, final OnNetworkResultInfoListener l) throws JSONException {
+
+        JSONObject credential = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
+        credential.put("username", username);
+        credential.put("password", password);
+        jsonObject.put("credential", credential);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl+"/"+ loginPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "Login response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getString("token"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage(), error);
+            }
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
                 return headers;
             }
         };

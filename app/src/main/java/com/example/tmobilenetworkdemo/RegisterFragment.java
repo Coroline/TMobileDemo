@@ -17,6 +17,8 @@ import android.widget.Toast;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 
+import org.json.JSONException;
+
 import java.util.Objects;
 
 /**
@@ -101,22 +103,25 @@ public class RegisterFragment extends Fragment {
 //                            Log.d(TAG, "Incomplete register information.");;
 //                        }
 //                    });
-                    manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
-                        @Override
-                        public void onSuccess() {
-                            Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
-                            UserInformationManager.username = username.getText().toString();
-//                            Intent intent = new Intent();
-//                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-//                            startActivity(intent);
-                        }
+                    try {
+                        manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnNetworkInformationListener() {
+                            @Override
+                            public void onSuccess() {
+                                Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
+                                UserInformationManager.username = username.getText().toString();
+                                Intent intent = new Intent();
+                                intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+                                startActivity(intent);
+                            }
 
-                        @Override
-                        public void onFail(String response) {
-                            Log.d("shenjianan", response);
-                            Log.d(TAG, "Incomplete register information.");;
-                        }
-                    });
+                            @Override
+                            public void onFail() {
+                                Log.d(TAG, "Incomplete register information.");;
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     Log.d(TAG, "Incomplete register information.");
                 }

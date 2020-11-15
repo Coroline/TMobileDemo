@@ -15,6 +15,8 @@ import android.widget.Toast;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 
+import org.json.JSONException;
+
 import java.util.Objects;
 
 /**
@@ -80,20 +82,25 @@ public class LoginFragment extends Fragment {
                 // TODO: Check username and password in the backend
                 // If check is successful
                 NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
-                manager.checkLogin(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
-                    @Override
-                    public void onSuccess(String password) {
-                        UserInformationManager.username = username.getText().toString();
-                        Intent intent = new Intent();
-                        intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-                        startActivity(intent);
-                    }
+                try {
+                    manager.loginUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnNetworkResultInfoListener() {
+                        @Override
+                        public void onSuccess(String token) {
+                            System.out.println(token);
+                            UserInformationManager.username = username.getText().toString();
+                            Intent intent = new Intent();
+                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+                            startActivity(intent);
+                        }
 
-                    @Override
-                    public void onFail() {
-                        Toast.makeText(getContext(), "Incorrect username or password. Try again", Toast.LENGTH_LONG).show();
-                    }
-                });
+                        @Override
+                        public void onFail() {
+                            Toast.makeText(getContext(), "Incorrect username or password. Try again", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
         });
 
