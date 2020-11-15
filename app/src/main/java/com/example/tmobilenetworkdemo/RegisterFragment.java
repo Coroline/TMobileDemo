@@ -86,18 +86,34 @@ public class RegisterFragment extends Fragment {
             public void onClick(View view) {
                 if(validateForm()) {
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
-                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
+//                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
+//                        @Override
+//                        public void onSuccess(String password) {
+//                            Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
+//                            UserInformationManager.username = username.getText().toString();
+//                            Intent intent = new Intent();
+//                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+//                            startActivity(intent);
+//                        }
+//
+//                        @Override
+//                        public void onFail() {
+//                            Log.d(TAG, "Incomplete register information.");;
+//                        }
+//                    });
+                    manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
                         @Override
-                        public void onSuccess(String password) {
+                        public void onSuccess() {
                             Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
                             UserInformationManager.username = username.getText().toString();
-                            Intent intent = new Intent();
-                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-                            startActivity(intent);
+//                            Intent intent = new Intent();
+//                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+//                            startActivity(intent);
                         }
 
                         @Override
-                        public void onFail() {
+                        public void onFail(String response) {
+                            Log.d("shenjianan", response);
                             Log.d(TAG, "Incomplete register information.");;
                         }
                     });

@@ -7,8 +7,12 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,9 +23,9 @@ public class NetworkInformationManager {
     private static NetworkInformationManager sInstance;
     private static Context mContext;
     private static RequestQueue requestQueue;
-    private static final String serverUrl = "http://shenjianan97.link:5002";
+    private static final String serverUrl = "http://34.216.147.160:80";
     private static final String loginPath = "login";
-    private static final String registerUserPath = "registeruser";
+    private static final String registerUserPath = "register-app-user";
     private static final String registerWifiPath = "registerhotspot";
     private static final String checkWifiPasswordPath = "checkhotspot";
 
@@ -43,6 +47,12 @@ public class NetworkInformationManager {
         void onSuccess();
         // close wifi hotspot because of network failure
         void onFail();
+    }
+
+    public interface OnRegisterUserListener {
+        // proceed to next page
+        void onSuccess();
+        void onFail(String response);
     }
 
     public interface OnNetworkInformationListener {
@@ -178,6 +188,46 @@ public class NetworkInformationManager {
             }
         };
         requestQueue.add(stringRequest);
+    }
+
+    public void registerUser(final String username, final String password, final OnRegisterUserListener l) {
+
+        Map<String, String> credential = new HashMap<String, String>();
+        credential.put("username", username);
+        credential.put("password", password);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("credential", credential);
+
+        Log.d("map", map.toString());
+        JSONObject jsonObject = new JSONObject(map);
+
+
+        Log.e(TAG, "getdata: " + jsonObject.toString());
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "response -> " + response.toString());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage(), error);
+            }
+        }) {
+
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
     }
 
 
