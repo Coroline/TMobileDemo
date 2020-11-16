@@ -17,31 +17,37 @@ import android.provider.Settings;
 
 import androidx.core.app.ActivityCompat;
 
+import com.example.tmobilenetworkdemo.CreateHotspotActivity;
+import com.example.tmobilenetworkdemo.CreatedHotspotInformationActivity;
+import com.example.tmobilenetworkdemo.MainActivity;
+
 public class GPSTracking extends Service implements LocationListener {
-    private final Context mContext;
+//    private final Context mContext;
 
     boolean isGPSEnabled = false;
     boolean isNetworkEnabled = false;
     private boolean canGetLocation = false;
 
     Location mLocation;
-    private double lat;
-    private double lng;
+//    private double lat;
+//    private double lng;
+    public static double lat;
+    public static double lng;
 
-    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATE = 1;
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATE = 0;
 
     private static final long MIN_TIME_BW_UPDATE = 1000 * 6;
 
     protected LocationManager locationManager;
 
-    public GPSTracking(Context context) {
-        this.mContext = context;
-        getLocation();
-    }
+    private MyBinder binder = new MyBinder();
+
+    public GPSTracking() {}
+
 
     public Location getLocation() {
         try {
-            locationManager = (LocationManager) mContext.getSystemService(LOCATION_SERVICE);
+            locationManager = (LocationManager) this.getSystemService(LOCATION_SERVICE);
             isGPSEnabled = locationManager.isProviderEnabled(locationManager.GPS_PROVIDER);
             isNetworkEnabled = locationManager.isProviderEnabled(locationManager.NETWORK_PROVIDER);
 
@@ -56,8 +62,8 @@ public class GPSTracking extends Service implements LocationListener {
                     }
                     locationManager.requestLocationUpdates(
                             LocationManager.NETWORK_PROVIDER,
-                            MIN_TIME_BW_UPDATE,
-                            MIN_DISTANCE_CHANGE_FOR_UPDATE,
+                            0,
+                            5000,
                             this
                     );
                     if(locationManager!=null){
@@ -96,7 +102,7 @@ public class GPSTracking extends Service implements LocationListener {
 
 
     public void showAlertDialog(){
-        AlertDialog.Builder alertDialog = new AlertDialog.Builder(mContext);
+        AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         alertDialog.setTitle("GPS is settings");
 
@@ -106,7 +112,7 @@ public class GPSTracking extends Service implements LocationListener {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                mContext.startActivity(intent);
+                getApplicationContext().startActivity(intent);
             }
         });
 
@@ -120,10 +126,15 @@ public class GPSTracking extends Service implements LocationListener {
         alertDialog.show();
     }
 
+
+    public String getAuthorName(){
+        return "Yawei Zhang";
+    }
+
+
     @Override
     public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
+        return new MyBinder();
     }
 
 
@@ -138,6 +149,14 @@ public class GPSTracking extends Service implements LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
+        lat = location.getLatitude();
+        lng = location.getLongitude();
+        System.out.println("''''''''''''''''''''''''''''''''''" + lat + " " + lng);
+        Intent i = new Intent(this, MainActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("lat", String.valueOf(lat));
+        bundle.putString("lng", String.valueOf(lng));
+        i.putExtra("locationData", bundle);
 
     }
 

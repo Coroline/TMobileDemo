@@ -6,6 +6,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.Service;
 import android.app.usage.UsageStatsManager;
 import android.content.ComponentName;
 import android.content.Context;
@@ -29,6 +30,8 @@ import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Receiver.HotSpotIntentReceiver;
 
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CompletableFuture;
 
 public class MainActivity extends AppCompatActivity {
@@ -36,8 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private Button create;
     private Button connect;
     static final int MY_PERMISSIONS_MANAGE_WRITE_SETTINGS = 100 ;
-    GPSTracking locationService;
-    ServiceConnection conn;
+    private GPSTracking locationService;
+    private ServiceConnection conn;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -47,7 +50,6 @@ public class MainActivity extends AppCompatActivity {
 
         create = findViewById(R.id.create);
         connect = findViewById(R.id.connect);
-        Log.d("shenjianan", "......");
         settingPermission();
         requestPermissions();
         create.setOnClickListener(new View.OnClickListener() {
@@ -66,6 +68,42 @@ public class MainActivity extends AppCompatActivity {
         });
         IntentFilter intentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGEDD");
         getApplicationContext().registerReceiver(new HotSpotIntentReceiver(), intentFilter);
+
+
+        // Location update service
+        Intent serviceIntent = new Intent(this, GPSTracking.class);
+        conn = new ServiceConnection()
+        {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service)
+            {
+                System.out.println("---------------------------------------");
+                GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
+                locationService = binder.getService();
+                Location loc = locationService.getLocation();
+                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+            }
+            @Override
+            public void onServiceDisconnected(ComponentName name)
+            {
+                locationService = null;
+            }
+        };
+        getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
+
+
+
+        Timer timer = new Timer();
+        timer.schedule(new MyTask(), 0, 5000);
+    }
+
+
+    class MyTask extends TimerTask {
+
+        @Override
+        public void run() {
+            System.out.println(GPSTracking.lat + " " + GPSTracking.lng);
+        }
     }
 
 

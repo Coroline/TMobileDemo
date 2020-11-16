@@ -43,6 +43,8 @@
             android:theme="@style/AppTheme.NoActionBar" android:noHistory="true"/>
         <activity android:name=".CreatedHotspotInformationActivity"/>
 
+        <service android:name=".Lib.GPSTracking"/>
+
         <meta-data
             android:name="preloaded_fonts"
             android:resource="@array/preloaded_fonts" />
