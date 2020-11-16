@@ -36,8 +36,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private WifiManager wifiManager;
     private WifiConfiguration wifiConfiguration;
     private NetworkInformationManager networkInformationManager;
-    private boolean mIsConnectingWifi=false;
-    private boolean mIsFirstReceiveConnected=false;
+    private boolean mIsConnectingWifi = false;
+    private boolean mIsFirstReceiveConnected = false;
     private WifiAdmin mWifiAdmin;
     private WifiHotUtil mWifiHotUtil;
 
@@ -95,7 +95,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     public void onSuccess() {
                         runOnUiThread(new Runnable() {
                             public void run() {
-                                Toast.makeText(getApplicationContext(), "Successfully register a hotspot." , Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
                                 Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
                                 Bundle bundle = new Bundle();
                                 bundle.putString("hotspotName", SSID.getText().toString());
@@ -125,7 +125,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestPermissions() {
-        if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED){
+        if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.util.Log;
 
+import com.android.volley.AuthFailureError;
+import com.android.volley.NetworkError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
@@ -53,8 +55,16 @@ public class NetworkInformationManager {
 //
     public interface OnRegisterUserListener {
         // proceed to next page
-        void onSuccess();
-        void onFail(String response);
+        void onSuccess(String token);
+        void onNetworkFail();
+        void onRegisterFail();
+    }
+
+    public interface OnLoginListener {
+        // proceed to next page
+        void onSuccess(String token);
+        void onNetworkFail();
+        void onAuthFail();
     }
 
     public interface OnNetworkInformationListener {
@@ -173,7 +183,7 @@ public class NetworkInformationManager {
      * @param l interface for callback functions
      * @throws JSONException
      */
-    public void registerUser(final String username, final String password, final OnNetworkInformationListener l) throws JSONException {
+    public void registerUser(final String username, final String password, final OnRegisterUserListener l) throws JSONException {
 
         JSONObject credential = new JSONObject();
         JSONObject jsonObject = new JSONObject();
@@ -185,12 +195,23 @@ public class NetworkInformationManager {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        l.onSuccess();
+                        Log.d(TAG, "Login response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getString("token"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onRegisterFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
             }
         }) {
 
@@ -214,7 +235,7 @@ public class NetworkInformationManager {
      * @param l interface for callback functions
      * @throws JSONException
      */
-    public void loginUser(final String username, final String password, final OnNetworkResultInfoListener l) throws JSONException {
+    public void loginUser(final String username, final String password, final OnLoginListener l) throws JSONException {
 
         JSONObject credential = new JSONObject();
         JSONObject jsonObject = new JSONObject();
@@ -236,7 +257,14 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
+                if (error instanceof NetworkError) {
+                    Log.e(TAG, error.getMessage(), error);
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onAuthFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
             }
         }) {
 

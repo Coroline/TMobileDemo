@@ -29,7 +29,7 @@ public class GPSTracking extends Service implements LocationListener {
     private boolean canGetLocation = false;
 
     Location mLocation;
-//    private double lat;
+    //    private double lat;
 //    private double lng;
     public static double lat;
     public static double lng;
@@ -42,7 +42,8 @@ public class GPSTracking extends Service implements LocationListener {
 
     private MyBinder binder = new MyBinder();
 
-    public GPSTracking() {}
+    public GPSTracking() {
+    }
 
 
     public Location getLocation() {
@@ -66,9 +67,9 @@ public class GPSTracking extends Service implements LocationListener {
                             5000,
                             this
                     );
-                    if(locationManager!=null){
+                    if (locationManager != null) {
                         mLocation = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-                        if(mLocation!=null){
+                        if (mLocation != null) {
                             setLat(mLocation.getLatitude());
                             setLng(mLocation.getLongitude());
                         }
@@ -94,14 +95,14 @@ public class GPSTracking extends Service implements LocationListener {
                     }
                 }
             }
-        }catch (Exception e){
+        } catch (Exception e) {
 
         }
         return mLocation;
     }
 
 
-    public void showAlertDialog(){
+    public void showAlertDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
 
         alertDialog.setTitle("GPS is settings");
@@ -127,7 +128,7 @@ public class GPSTracking extends Service implements LocationListener {
     }
 
 
-    public String getAuthorName(){
+    public String getAuthorName() {
         return "Yawei Zhang";
     }
 
@@ -138,10 +139,8 @@ public class GPSTracking extends Service implements LocationListener {
     }
 
 
-    public class MyBinder extends Binder
-    {
-        public GPSTracking getService()
-        {
+    public class MyBinder extends Binder {
+        public GPSTracking getService() {
             return GPSTracking.this;
         }
     }

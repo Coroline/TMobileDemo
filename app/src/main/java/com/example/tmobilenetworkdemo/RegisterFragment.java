@@ -86,7 +86,7 @@ public class RegisterFragment extends Fragment {
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if(validateForm()) {
+                if (validateForm()) {
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
 //                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
 //                        @Override
@@ -104,10 +104,11 @@ public class RegisterFragment extends Fragment {
 //                        }
 //                    });
                     try {
-                        manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnNetworkInformationListener() {
+                        manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
                             @Override
-                            public void onSuccess() {
+                            public void onSuccess(String token) {
                                 Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
+                                UserInformationManager.token = token;
                                 UserInformationManager.username = username.getText().toString();
                                 Intent intent = new Intent();
                                 intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
@@ -115,8 +116,13 @@ public class RegisterFragment extends Fragment {
                             }
 
                             @Override
-                            public void onFail() {
-                                Log.d(TAG, "Incomplete register information.");;
+                            public void onRegisterFail() {
+                                Toast.makeText(getContext(), "Incomplete register information.", Toast.LENGTH_LONG).show();
+                            }
+
+                            @Override
+                            public void onNetworkFail() {
+                                Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
                             }
                         });
                     } catch (JSONException e) {
@@ -161,12 +167,12 @@ public class RegisterFragment extends Fragment {
 
         // Check if the username is unique (already done from server side)
 
-        if(pwd.length() < 6) {
+        if (pwd.length() < 6) {
             Toast.makeText(getContext(), "Password must be have more than 6 characters.", Toast.LENGTH_LONG).show();
             valid = false;
         }
 
-        if(!rePwd.equals(pwd)) {
+        if (!rePwd.equals(pwd)) {
             Toast.makeText(getContext(), "Two passwords don't match.", Toast.LENGTH_LONG).show();
             valid = false;
         }

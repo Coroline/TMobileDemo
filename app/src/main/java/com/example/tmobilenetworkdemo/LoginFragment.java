@@ -83,18 +83,24 @@ public class LoginFragment extends Fragment {
                 // If check is successful
                 NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
                 try {
-                    manager.loginUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnNetworkResultInfoListener() {
+                    manager.loginUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnLoginListener() {
                         @Override
                         public void onSuccess(String token) {
                             System.out.println(token);
                             UserInformationManager.username = username.getText().toString();
+                            UserInformationManager.token = token;
                             Intent intent = new Intent();
                             intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
                             startActivity(intent);
                         }
 
                         @Override
-                        public void onFail() {
+                        public void onNetworkFail() {
+                            Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onAuthFail() {
                             Toast.makeText(getContext(), "Incorrect username or password. Try again", Toast.LENGTH_LONG).show();
                         }
                     });
