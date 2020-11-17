@@ -76,10 +76,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         else
             currentConnection.setText(currentSSID);
 
-
-        // Get nearby client list from backend
-        NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -196,29 +192,49 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             if(configuration == null) {
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
-                    NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
+                    final NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
 
                     try {
-                        manager.requestConnection(UserInformationManager.token, 0, 1000, 50, new NetworkInformationManager.OnRequestConnectionListener() {
+                        // Get nearby client list from backend
+                        manager.findClients(UserInformationManager.token, "school", 1000, 100, new NetworkInformationManager.OnFindClientsListener() {
                             @Override
-                            public void onSuccess(String password, int connectionId) {
-                                Log.d(TAG, "password is: " + password);
-                                UserInformationManager.connectionId = connectionId;
+                            public void onSuccess(String result) {
+                                try {
+                                    manager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000, 50, new NetworkInformationManager.OnRequestConnectionListener() {
+                                        @Override
+                                        public void onSuccess(String password, int connectionId) {
+                                            Log.d(TAG, "password is: " + password);
+                                            UserInformationManager.connectionId = connectionId;
 
-                                if (selectedWifi.capabilities.contains("WEP")) {
-                                    connecting(selectedWifi, password, 2);
-                                } else {
-                                    connecting(selectedWifi, password, 3);
+                                            if (selectedWifi.capabilities.contains("WEP")) {
+                                                connecting(selectedWifi, password, 2);
+                                            } else {
+                                                connecting(selectedWifi, password, 3);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onFail() {
+                                            showEditPwdDialog(selectedWifi);
+                                        }
+
+                                        @Override
+                                        public void onNetworkFail() {
+                                            showEditPwdDialog(selectedWifi);
+                                        }
+                                    });
+                                } catch (JSONException e){
+                                    e.printStackTrace();
                                 }
                             }
 
                             @Override
-                            public void onFail() {
+                            public void onNetworkFail() {
                                 showEditPwdDialog(selectedWifi);
                             }
 
                             @Override
-                            public void onNetworkFail() {
+                            public void onFail() {
                                 showEditPwdDialog(selectedWifi);
                             }
                         });

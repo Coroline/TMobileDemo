@@ -14,6 +14,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -32,6 +33,7 @@ public class NetworkInformationManager {
     private static final String startSharingPath = "start-sharing";
     private static final String findClientsPath = "find-clients";
     private static final String requestConnectionPath = "request-connection-to-client";
+    public static HashMap<String, Integer> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
         mContext = context;
@@ -182,13 +184,15 @@ public class NetworkInformationManager {
         JSONObject sharingConfiguration = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         hotspotInformation.put("ssid", ssid);
-        hotspotInformation.put("password", password);
+        hotspotInformation.put("pwd", password);
         sharingConfiguration.put("bandwidth", bandwidth);
         sharingConfiguration.put("duration", duration);
         jsonObject.put("token", UserInformationManager.token);
         jsonObject.put("location", location);
         jsonObject.put("hotspotInformation", hotspotInformation);
         jsonObject.put("sharingConfiguration", sharingConfiguration);
+
+        Log.d(TAG, jsonObject.toString());
 
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + startSharingPath, jsonObject,
                 new Response.Listener<JSONObject>() {
@@ -248,6 +252,19 @@ public class NetworkInformationManager {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "find clients response -> " + response.toString());
+                        JSONArray ssidArray = response.optJSONArray("ssids");
+                        JSONArray idArray = response.optJSONArray("clientIds");
+                        String[] ssids = new String[ssidArray.length()];
+                        for (int i = 0; i < ssids.length; ++i) {
+                            ssids[i] = ssidArray.optString(i);
+                        }
+                        int[] ids = new int[idArray.length()];
+                        for (int i = 0; i < ids.length; ++i) {
+                            ids[i] = idArray.optInt(i);
+                        }
+                        for(int i = 0; i < ssids.length; i++) {
+                            ssidIdMap.put(ssids[i], ids[i]);
+                        }
                         l.onSuccess("xxxxxx");
                     }
                 }, new Response.ErrorListener() {
