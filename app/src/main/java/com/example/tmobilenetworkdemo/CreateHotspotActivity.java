@@ -27,6 +27,8 @@ import com.example.tmobilenetworkdemo.Wifi.MyOnStartTetheringCallback;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
 
+import org.json.JSONException;
+
 
 public class CreateHotspotActivity extends AppCompatActivity {
 
@@ -90,9 +92,9 @@ public class CreateHotspotActivity extends AppCompatActivity {
 //                    mWifiHotUtil.hotspotOreo(true, callback);
 //                }
                 // todo: register information
-                NetworkInformationManager.OnNetworkInformationListener callback = new NetworkInformationManager.OnNetworkInformationListener() {
+                NetworkInformationManager.OnStartSharingListener callback = new NetworkInformationManager.OnStartSharingListener() {
                     @Override
-                    public void onSuccess() {
+                    public void onSuccess(String result) {
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
@@ -106,12 +108,30 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     }
 
                     @Override
-                    public void onFail() {
+                    public void onNetworkFail() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
 
+                    @Override
+                    public void onFail() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "unknown error", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
                 };
-
-                networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.username, callback);
+                try {
+                    // todo: create a UI to set bandwidth and duration
+                    // todo: location still need discussion
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000, 200, callback);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
 
 //                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
 //                Bundle bundle = new Bundle();

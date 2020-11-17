@@ -34,6 +34,8 @@ import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
+import org.json.JSONException;
+
 import java.util.List;
 
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
@@ -78,17 +80,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         // Get nearby client list from backend
         NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
 
-//        manager.getNearbyClient(currentSSID, new NetworkInformationManager.OnNetworkInformationListener() {
-//            @Override
-//            public void onSuccess() {
-//                // TODO: Assign result list from the network call to nearbyClient ArrayList(line 55)
-//            }
-//
-//            @Override
-//            public void onFail() {
-//
-//            }
-//        });
         scan.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -205,23 +196,35 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             if(configuration == null) {
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
-                    //todo: volley request
                     NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-                    manager.checkWifiPassword(selectedWifi.SSID, UserInformationManager.username, new NetworkInformationManager.OnNetworkResultInfoListener() {
-                        @Override
-                        public void onSuccess(String password) {
-                            Log.d(TAG, "password is: " + password);
-                            if (selectedWifi.capabilities.contains("WEP")) {
-                                connecting(selectedWifi, password,2);
-                            }else {
-                                connecting(selectedWifi, password,3);
+
+                    try {
+                        manager.requestConnection(UserInformationManager.token, 0, 1000, 50, new NetworkInformationManager.OnRequestConnectionListener() {
+                            @Override
+                            public void onSuccess(String password, int connectionId) {
+                                Log.d(TAG, "password is: " + password);
+                                UserInformationManager.connectionId = connectionId;
+
+                                if (selectedWifi.capabilities.contains("WEP")) {
+                                    connecting(selectedWifi, password, 2);
+                                } else {
+                                    connecting(selectedWifi, password, 3);
+                                }
                             }
-                        }
-                        @Override
-                        public void onFail() {
-                            showEditPwdDialog(selectedWifi);
-                        }
-                    });
+
+                            @Override
+                            public void onFail() {
+                                showEditPwdDialog(selectedWifi);
+                            }
+
+                            @Override
+                            public void onNetworkFail() {
+                                showEditPwdDialog(selectedWifi);
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     Log.d(TAG, "no password.");
                     connecting(selectedWifi, null, 1);

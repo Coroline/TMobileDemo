@@ -1,7 +1,6 @@
 package com.example.tmobilenetworkdemo.Lib;
 
 import android.content.Context;
-import android.renderscript.ScriptIntrinsicYuvToRGB;
 import android.util.Log;
 
 import com.android.volley.AuthFailureError;
@@ -30,47 +29,57 @@ public class NetworkInformationManager {
     private static final String serverUrl = "http://34.216.147.160:80";
     private static final String loginPath = "login-app-user";
     private static final String registerUserPath = "register-app-user";
-    private static final String registerWifiPath = "registerhotspot";
-    private static final String checkWifiPasswordPath = "checkhotspot";
+    private static final String startSharingPath = "start-sharing";
+    private static final String findClientsPath = "find-clients";
+    private static final String requestConnectionPath = "request-connection-to-client";
 
     private NetworkInformationManager(Context context) {
         mContext = context;
         requestQueue = Volley.newRequestQueue(mContext);
     }
 
-
-    public interface OnNetworkResultInfoListener {
+    public interface OnRequestConnectionListener {
         // change GUI
-        void onSuccess(String result);
-        // pop up password input prompt
+        void onSuccess(String password, int connectionId);
+
+        void onNetworkFail();
+
         void onFail();
     }
-//
-//    public interface OnRegisterHotspotListener {
-//        // proceed to next page
-//        void onSuccess();
-//        // close wifi hotspot because of network failure
-//        void onFail();
-//    }
-//
+
+    public interface OnFindClientsListener {
+        void onSuccess(String result);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
     public interface OnRegisterUserListener {
         // proceed to next page
         void onSuccess(String token);
+
         void onNetworkFail();
+
         void onRegisterFail();
     }
 
     public interface OnLoginListener {
         // proceed to next page
         void onSuccess(String token);
+
         void onNetworkFail();
+
         void onAuthFail();
     }
 
-    public interface OnNetworkInformationListener {
+    public interface OnStartSharingListener {
         // proceed to next page
-        void onSuccess();
+        void onSuccess(String result);
+
         // close wifi hotspot because of network failure
+        void onNetworkFail();
+
         void onFail();
     }
 
@@ -98,89 +107,178 @@ public class NetworkInformationManager {
         requestQueue.add(stringRequest);
     }
 
-    public void checkWifiPassword(final String ssid, final String username, final OnNetworkResultInfoListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ checkWifiPasswordPath, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                l.onSuccess(response);
-            }
-        }, new Response.ErrorListener() {
+    public void requestConnection(final String token, final int clientId, final int bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
+        /*
+        {
+          "token": "Asd8vch89q23",
+          "clientUserId":33,
+           "sharingConfiguration": {
+            "bandwidth": 123, // bytes
+            "duration": 3600 // seconds
+          }
+        }
+         */
+        JSONObject jsonObject = new JSONObject();
+        JSONObject sharingConfiguration = new JSONObject();
+        sharingConfiguration.put("bandwidth", bandwidth);
+        sharingConfiguration.put("duration", duration);
+        jsonObject.put("token", token);
+        jsonObject.put("clientUserId", clientId);
+        jsonObject.put("sharingConfiguration", sharingConfiguration);
+
+        Log.d(TAG, jsonObject.toString());
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + requestConnectionPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "request connection response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getString("password"), response.getInt("connectionId"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-                l.onFail();
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else {
+                    l.onFail();
+                    Log.e(TAG, error.getMessage(), error);
+                }
             }
-        }){
+        }) {
+
             @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
-                params.put("ssid", ssid);
-                params.put("username", username);
-                return params;
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Connection", "keep-alive");
+                return headers;
             }
         };
-        //将创建的请求添加到请求队列当中
-        requestQueue.add(stringRequest);
+        requestQueue.add(jsonRequest);
     }
 
-    public void registerWifiInfo(final String ssid, final String password, final String username, final OnNetworkInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerWifiPath, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                l.onSuccess();
-            }
-        }, new Response.ErrorListener() {
+    public void registerWifiInfo(final String ssid, final String password, final String token, final String location, final int bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
+        /*
+        {
+          "token": "Afdsfqe124",
+          “Location”: “school”,
+          "hotspotInformation": {
+            "ssid": "123",
+            "pwd": "abc"
+          },
+          "sharingConfiguration": {
+            "bandwidth": 123.0,
+            "duration": 100
+          }
+        }
+         */
+        JSONObject hotspotInformation = new JSONObject();
+        JSONObject sharingConfiguration = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
+        hotspotInformation.put("ssid", ssid);
+        hotspotInformation.put("password", password);
+        sharingConfiguration.put("bandwidth", bandwidth);
+        sharingConfiguration.put("duration", duration);
+        jsonObject.put("token", UserInformationManager.token);
+        jsonObject.put("location", location);
+        jsonObject.put("hotspotInformation", hotspotInformation);
+        jsonObject.put("sharingConfiguration", sharingConfiguration);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + startSharingPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "register wifi response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getString("status"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-                l.onFail();
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else {
+                    l.onFail();
+                    Log.e(TAG, error.getMessage(), error);
+                }
             }
-        }){
+        }) {
             @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
-                params.put("ssid", ssid);
-                params.put("password", password);
-                params.put("username", username);
-                return params;
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Connection", "keep-alive");
+                return headers;
             }
         };
-        //将创建的请求添加到请求队列当中
-        requestQueue.add(stringRequest);
+        requestQueue.add(jsonRequest);
     }
 
+    public void findClients(final String token, final String location, final int bandwidth, final int duration, final OnFindClientsListener l) throws JSONException{
+        /*
+        {
+          "token": "Afdsfqe124",
+          "location": "Cafe",
+          "sharingConfiguration": {
+            "bandwidth": 123, // bytes
+            "duration": 3600 // seconds
+          }
+        }
+         */
+        JSONObject sharingConfiguration = new JSONObject();
+        sharingConfiguration.put("token", token);
+        sharingConfiguration.put("duration", duration);
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+        jsonObject.put("location", location);
+        jsonObject.put("sharingConfiguration", sharingConfiguration);
 
-    // Login: Check is the username and password exist in the backend
-//    public void checkLogin(final String username, final String password, final OnRequestHotspotInfoListener l) {
-//        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ loginPath, new Response.Listener<String>() {
-//            @Override
-//            public void onResponse(String response) {
-//                l.onSuccess(response);
-//            }
-//        }, new Response.ErrorListener() {
-//            @Override
-//            public void onErrorResponse(VolleyError error) {
-//                Log.e(TAG, error.getMessage(), error);
-//                l.onFail();
-//            }
-//        }){
-//            @Override
-//            protected Map<String,String> getParams(){
-//                Map<String,String> params = new HashMap<>();
-//                params.put("username", username);
-//                params.put("password", password);
-//                return params;
-//            }
-//        };
-//        requestQueue.add(stringRequest);
-//    }
-
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + findClientsPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "find clients response -> " + response.toString());
+                        l.onSuccess("xxxxxx");
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else {
+                    l.onFail();
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Connection", "keep-alive");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
 
     /**
      * Register
+     *
      * @param username username for register
      * @param password password for register
-     * @param l interface for callback functions
+     * @param l        interface for callback functions
      * @throws JSONException
      */
     public void registerUser(final String username, final String password, final OnRegisterUserListener l) throws JSONException {
@@ -191,11 +289,11 @@ public class NetworkInformationManager {
         credential.put("password", password);
         jsonObject.put("credential", credential);
 
-        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, jsonObject,
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + registerUserPath, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Log.d(TAG, "Login response -> " + response.toString());
+                        Log.d(TAG, "register response -> " + response.toString());
                         try {
                             l.onSuccess(response.getString("token"));
                         } catch (JSONException e) {
@@ -214,7 +312,6 @@ public class NetworkInformationManager {
                 }
             }
         }) {
-
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -230,9 +327,10 @@ public class NetworkInformationManager {
 
     /**
      * Login network request
+     *
      * @param username username for login
      * @param password password for login
-     * @param l interface for callback functions
+     * @param l        interface for callback functions
      * @throws JSONException
      */
     public void loginUser(final String username, final String password, final OnLoginListener l) throws JSONException {
@@ -243,7 +341,7 @@ public class NetworkInformationManager {
         credential.put("password", password);
         jsonObject.put("credential", credential);
 
-        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl+"/"+ loginPath, jsonObject,
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + loginPath, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
@@ -267,7 +365,6 @@ public class NetworkInformationManager {
                 }
             }
         }) {
-
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -277,30 +374,5 @@ public class NetworkInformationManager {
             }
         };
         requestQueue.add(jsonRequest);
-    }
-
-
-    // Get nearby client list for future connection
-    public void getNearbyClient(final String SSID, final OnNetworkInformationListener l) {
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, serverUrl+"/"+ registerUserPath, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                l.onSuccess();
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-                l.onFail();
-            }
-        }){
-            @Override
-            protected Map<String,String> getParams(){
-                Map<String,String> params = new HashMap<>();
-                params.put("SSID", SSID);
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
     }
 }
