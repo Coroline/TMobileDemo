@@ -128,7 +128,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                 try {
                     // todo: create a UI to set bandwidth and duration
                     // todo: location still need discussion
-                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000, 200, callback);
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000, 50000, callback);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

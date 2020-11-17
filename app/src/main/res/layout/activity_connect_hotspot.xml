@@ -47,6 +47,39 @@
             app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/monitor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_marginTop="15dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linear">
+
+        <TextView
+            android:id="@+id/bandwidth_usage_head"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:text="Bandwidth Usage: "
+            android:textSize="18sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/current_bandwidth_usage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 MB"
+            android:textSize="18sp"
+            android:layout_weight="0.7"
+            android:layout_marginLeft="5dp"
+            app:layout_constraintStart_toEndOf="@+id/created_wifi"
+            app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
+    </LinearLayout>
+
     <View
         android:id="@+id/line2"
         android:layout_height="1px"
@@ -54,7 +87,7 @@
         android:layout_width="fill_parent"
         android:layout_marginTop="20dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/linear"
+        app:layout_constraintTop_toBottomOf="@id/monitor"
         />
 
     <Button

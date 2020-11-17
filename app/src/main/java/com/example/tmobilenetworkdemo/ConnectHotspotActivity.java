@@ -4,14 +4,19 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
+import android.app.usage.NetworkStatsManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.TrafficStats;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -22,6 +27,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
@@ -32,11 +38,18 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
+import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
+import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import org.json.JSONException;
 
+import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
 
@@ -55,6 +68,20 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
     private long connectionStartTime = 0;
+    private long startTime = System.currentTimeMillis();
+    private long endTime = System.currentTimeMillis();
+
+    double totalWifi;
+    public static String wifiTraffic ;
+    public static double wf = 0;
+    private TextView currentBandwidthUsage;
+    private WifiManager wifiManager;
+    public static int wifiStr;
+    DecimalFormat df = new DecimalFormat(".##");
+    private TextView bandwidthUsageHead;
+    private Handler handler1= null;
+    int hours = 0,minutes = 0,seconds = 0;
+    private NetworkInformationManager networkInformationManager;
 
     private static final String TAG = "ConnectHotspotActivity";
 
@@ -68,6 +95,9 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         imageView2 = findViewById(R.id.imageView2);
         wifi_recyclerView.setVisibility(View.INVISIBLE);
         imageView2.setVisibility(View.VISIBLE);
+        currentBandwidthUsage = findViewById(R.id.current_bandwidth_usage);
+        bandwidthUsageHead = findViewById(R.id.bandwidth_usage_head);
+        networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
 
         mWifiAdmin = new WifiAdmin(this);
         currentSSID = mWifiAdmin.getSSID();
@@ -92,7 +122,140 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
 
 //        fillData(getPackageName());
+
     }
+
+
+    private void newHotspotConnectionClicked() {
+        seconds = 0;
+        wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+        wifiStr = wifiManager.getWifiState();
+
+        if(wifiStr != 3){
+            Toast.makeText(this, "Disconnect from WiFi", Toast.LENGTH_LONG).show();
+        }
+        if(wifiStr == 3){
+            final Handler handler = new Handler(){
+                public void handleMessage(Message msg){
+                    super.handleMessage(msg);
+                    if(msg.what == 1){
+                        if(Double.parseDouble(wifiTraffic) < 1){
+                            Log.i("wifiTraffic", wifiTraffic);
+                            currentBandwidthUsage.setText("0" + wifiTraffic + "MB");
+                        }
+                        else{
+                            currentBandwidthUsage.setText(wifiTraffic + "MB");
+                        }
+                        System.out.println("||||||||||||||||||||||||||||||||");
+                        try {
+                            System.out.println("?????????????????????????");
+                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, (int)Double.parseDouble(wifiTraffic), new NetworkInformationManager.OnBandwidthUpdateListener() {
+                                @Override
+                                public void onSuccess(String result) {
+                                    System.out.println(result);
+                                }
+
+                                @Override
+                                public void onNetworkFail() {
+
+                                }
+
+                                @Override
+                                public void onFail() {
+
+                                }
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
+
+            if(wifiStr == 3){
+                handler1 = new Handler(){
+                    public void handleMessage(Message msg1){
+                        super.handleMessage(msg1);
+                        if(msg1.what == 1){
+                            bandwidthUsageHead.setText(new DecimalFormat("00").format(hours) + ":" +
+                                    new DecimalFormat("00").format(minutes) + ":" + new DecimalFormat("00").format(seconds));
+                        }
+                    }
+                };
+            }
+
+            new Thread(new Runnable() {
+                public void run(){
+                    for(int i = 0; ; i++){
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+// TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        seconds += 5;
+                        Message msg1 = new Message();
+                        msg1.what = 1;
+                        handler1.sendMessage(msg1);
+                        if(seconds == 60){
+                            seconds = 0;
+                            minutes++;
+                            if(minutes == 60){
+                                minutes = 0;
+                                hours++;
+                            }
+                        }
+                    }
+                }
+            }).start();
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    while(true){
+                        double currentTime = System.currentTimeMillis();
+//  getWifiTraffic(currentTime);
+                        double totalWifi01 = getWifiTraffic(currentTime);;
+                        try {
+                            Thread.sleep(5000);
+                        } catch (InterruptedException e) {
+// TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        double frontTime = System.currentTimeMillis();
+//  getWifiTraffic(frontTime);
+                        double totalWifi02 = getWifiTraffic(frontTime);
+                        double errorTraffic = totalWifi02 - totalWifi01;
+                        if(errorTraffic < 512){
+                            errorTraffic = 1;
+                        }
+//                        wf += errorTraffic/1111500;
+                        wf += errorTraffic;
+                        wifiTraffic = df.format(wf);
+//  Log.i("使用的流量", wifiTraffic + "");
+                        Message message = new Message();
+                        message.what = 1;
+                        handler.sendMessage(message);
+                    }
+                }
+            }).start();
+        }
+    }
+
+
+
+    public double getWifiTraffic(double time){
+        double rtotalGprs = TrafficStats.getTotalRxBytes();
+        double ttotalGprs = TrafficStats.getTotalTxBytes();
+        double rgprs = TrafficStats.getMobileRxBytes();
+        double tgprs = TrafficStats.getMobileTxBytes();
+        double rwifi = rtotalGprs - rgprs;
+        double twifi = ttotalGprs - tgprs;
+        totalWifi = rwifi + twifi;
+        return totalWifi;
+//totalWifi = rtotalGprs + ttotalGprs;
+    }
+
 
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -196,11 +359,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
                     try {
                         // Get nearby client list from backend
-                        manager.findClients(UserInformationManager.token, "school", 1000, 100, new NetworkInformationManager.OnFindClientsListener() {
+                        manager.findClients(UserInformationManager.token, "school", 1000, 50000, new NetworkInformationManager.OnFindClientsListener() {
                             @Override
                             public void onSuccess(String result) {
                                 try {
-                                    manager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000, 50, new NetworkInformationManager.OnRequestConnectionListener() {
+                                    manager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
                                         @Override
                                         public void onSuccess(String password, int connectionId) {
                                             Log.d(TAG, "password is: " + password);
@@ -211,6 +374,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                                             } else {
                                                 connecting(selectedWifi, password, 3);
                                             }
+
+                                            newHotspotConnectionClicked();
                                         }
 
                                         @Override
@@ -352,25 +517,25 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //    }
 
 
-//    private void fillData(String packageName) {
-//        int uid = PackageManagerHelper.getPackageUid(this, packageName);
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-//            NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
-//            NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
-//            fillNetworkStatsAll(networkStatsHelper);
-////            fillNetworkStatsPackage(uid, networkStatsHelper);
-//        }
-////        fillTrafficStatsAll();
-////        fillTrafficStatsPackage(uid);
-//    }
-//
-//    @TargetApi(Build.VERSION_CODES.M)
-//    private void fillNetworkStatsAll(NetworkStatsHelper networkStatsHelper) {
-//        long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(this) + networkStatsHelper.getAllRxBytesWifi();
-//        networkStatsAllRx.setText(mobileWifiRx / 1000000.0 + " MB");
-//        long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(this) + networkStatsHelper.getAllTxBytesWifi();
-//        networkStatsAllTx.setText(mobileWifiTx / 1000000.0 + " MB");
-//    }
+    private void fillData(String packageName) {
+        int uid = PackageManagerHelper.getPackageUid(this, packageName);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
+            NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
+            fillNetworkStatsAll(networkStatsHelper);
+//            fillNetworkStatsPackage(uid, networkStatsHelper);
+        }
+//        fillTrafficStatsAll();
+//        fillTrafficStatsPackage(uid);
+    }
+
+    @TargetApi(Build.VERSION_CODES.M)
+    private void fillNetworkStatsAll(NetworkStatsHelper networkStatsHelper) {
+        long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(this) + networkStatsHelper.getAllRxBytesWifi();
+        long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(this) + networkStatsHelper.getAllTxBytesWifi();
+        System.out.println(mobileWifiRx / 1000000.0 + " MB");
+        System.out.println(mobileWifiTx / 1000000.0 + " MB");
+    }
 
 //    @TargetApi(Build.VERSION_CODES.M)
 //    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {

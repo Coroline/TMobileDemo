@@ -33,6 +33,7 @@ public class NetworkInformationManager {
     private static final String startSharingPath = "start-sharing";
     private static final String findClientsPath = "find-clients";
     private static final String requestConnectionPath = "request-connection-to-client";
+    private static final String updateBandwidthUsage = "update-bandwidth-usage";
     public static HashMap<String, Integer> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
@@ -80,6 +81,14 @@ public class NetworkInformationManager {
         void onSuccess(String result);
 
         // close wifi hotspot because of network failure
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnBandwidthUpdateListener {
+        void onSuccess(String result);
+
         void onNetworkFail();
 
         void onFail();
@@ -289,6 +298,56 @@ public class NetworkInformationManager {
         };
         requestQueue.add(jsonRequest);
     }
+
+
+    /**
+     * Update and send bandwidth usage width a specific time interval to the web server
+     * @param token User's identifier
+     * @param connectionID Hotspot connection identifier
+     * @param bandwidthUsageUpdate Bandwidth usage amount to add
+     * @param l
+     */
+    public void updateBandwidthUsage(final String token, final int connectionID, final int bandwidthUsageUpdate, final OnBandwidthUpdateListener l) throws JSONException {
+        JSONObject updateBandwidthInfo = new JSONObject();
+        updateBandwidthInfo.put("token", token);
+        updateBandwidthInfo.put("connectionId", connectionID);
+        updateBandwidthInfo.put("bandwidthUsageSinceLastUpdate", bandwidthUsageUpdate);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + updateBandwidthUsage, updateBandwidthInfo,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "update bandwidth response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getString("shouldDisconnect"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                headers.put("Connection", "keep-alive");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
 
     /**
      * Register

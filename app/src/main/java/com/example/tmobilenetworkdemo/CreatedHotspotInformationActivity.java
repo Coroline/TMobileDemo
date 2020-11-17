@@ -48,7 +48,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         Date day = new Date();
         startTime = day.getTime();
 
-        fillData(getPackageName());
+//        fillData(getPackageName());
 
         // Dummy data
         List<ConnectDevice> l = new ArrayList<>();
@@ -72,32 +72,32 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     }
 
 
-    private void fillData(String packageName) {
-        Timer timer = new Timer();
-        timer.schedule(new MyTask(), 0, 5000);  //任务等待0秒后开始执行，之后每秒执行一次
-    }
-
-
-    class MyTask extends TimerTask {
-        @Override
-        public void run() {
-            int uid = PackageManagerHelper.getPackageUid(getApplicationContext(), getPackageName());
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-                NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
-                NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
-
-                Date day = new Date();
-                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                endTime = day.getTime();
-
-                //  + networkStatsHelper.getAllRxBytesWifi()
-                long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(getApplicationContext(), startTime, endTime);
-                // + networkStatsHelper.getAllTxBytesWifi()
-                long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(getApplicationContext(), startTime, endTime);
-                System.out.println(df.format(day) + " " + day.getTime() + " " + startTime + " " + endTime + " " + "\n");
-                System.out.println(mobileWifiRx + mobileWifiTx);
-            }
-        }
-    }
+//    private void fillData(String packageName) {
+//        Timer timer = new Timer();
+//        timer.schedule(new MyTask(), 0, 5000);  //任务等待0秒后开始执行，之后每秒执行一次
+//    }
+//
+//
+//    class MyTask extends TimerTask {
+//        @Override
+//        public void run() {
+//            int uid = PackageManagerHelper.getPackageUid(getApplicationContext(), getPackageName());
+//            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+//
+//                NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
+//                NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
+//
+//                Date day = new Date();
+//                SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+//                endTime = day.getTime();
+//
+//                //  + networkStatsHelper.getAllRxBytesWifi()
+//                long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(getApplicationContext(), startTime, endTime);
+//                // + networkStatsHelper.getAllTxBytesWifi()
+//                long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(getApplicationContext(), startTime, endTime);
+//                System.out.println(df.format(day) + " " + day.getTime() + " " + startTime + " " + endTime + " " + "\n");
+//                System.out.println(mobileWifiRx + mobileWifiTx);
+//            }
+//        }
+//    }
 }

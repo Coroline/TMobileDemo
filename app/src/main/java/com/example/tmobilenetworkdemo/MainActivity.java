@@ -78,8 +78,8 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("---------------------------------------");
                 GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
                 locationService = binder.getService();
-                Location loc = locationService.getLocation();
-                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+//                Location loc = locationService.getLocation();
+//                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
             }
 
             @Override
