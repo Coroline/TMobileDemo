@@ -51,7 +51,7 @@ public class NetworkInformationManager {
     }
 
     public interface OnFindClientsListener {
-        void onSuccess(String result);
+        void onSuccess(HashMap<String, Integer> result);
 
         void onNetworkFail();
 
@@ -249,7 +249,7 @@ public class NetworkInformationManager {
         }
          */
         JSONObject sharingConfiguration = new JSONObject();
-        sharingConfiguration.put("token", token);
+        sharingConfiguration.put("bandwidth", bandwidth);
         sharingConfiguration.put("duration", duration);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("token", token);
@@ -274,7 +274,7 @@ public class NetworkInformationManager {
                         for(int i = 0; i < ssids.length; i++) {
                             ssidIdMap.put(ssids[i], ids[i]);
                         }
-                        l.onSuccess("xxxxxx");
+                        l.onSuccess(ssidIdMap);
                     }
                 }, new Response.ErrorListener() {
             @Override

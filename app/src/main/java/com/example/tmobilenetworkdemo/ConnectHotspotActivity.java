@@ -43,11 +43,16 @@ import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import org.json.JSONException;
+import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -55,13 +60,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
     private Button scan;
     private WifiAdmin mWifiAdmin;
-    private TextView networkStatsAllRx;
-    private TextView networkStatsAllTx;
     private TextView currentConnection;
     private RecyclerView wifi_recyclerView;
     private ImageView imageView2;
-    List<ScanResult> scanResult;
-    List<ScanResult> nearbyClient;
+    List<ScanResult> scanResult = new ArrayList<>();
+    List<ScanResult> nearbyClient = new ArrayList<>();
     private String currentSSID;
     public static boolean mIsConnectingWifi=false;
     public static boolean mIsFirstReceiveConnected=false;
@@ -82,6 +85,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private Handler handler1= null;
     int hours = 0,minutes = 0,seconds = 0;
     private NetworkInformationManager networkInformationManager;
+    private int connectDuration;    // Parameters for searching clients
+    private int connectionAmount;
 
     private static final String TAG = "ConnectHotspotActivity";
 
@@ -89,7 +94,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_hotspot);
-        scan = findViewById(R.id.scan);
+//        scan = findViewById(R.id.scan);
         currentConnection = findViewById(R.id.current_internet);
         wifi_recyclerView = findViewById(R.id.wifi_recyclerView);
         imageView2 = findViewById(R.id.imageView2);
@@ -99,6 +104,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         bandwidthUsageHead = findViewById(R.id.bandwidth_usage_head);
         networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
 
+        Intent intent = getIntent();
+        Bundle bundle=intent.getBundleExtra("data");
+        connectDuration = Integer.parseInt(Objects.requireNonNull(bundle.getString("bandwidthDuration")));
+        connectionAmount = Integer.parseInt(Objects.requireNonNull(bundle.getString("bandwidthAmount")));
+
         mWifiAdmin = new WifiAdmin(this);
         currentSSID = mWifiAdmin.getSSID();
         if(currentSSID.equals("NULL"))
@@ -106,22 +116,51 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         else
             currentConnection.setText(currentSSID);
 
-        scan.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                scanResult = mWifiAdmin.getScanResultList();
-                System.out.println(scanResult);
-//                nearbyClient.retainAll(scanResult);   // Get intersection of scanned result and backend result
-                initRecyclerView(scanResult);
-                wifi_recyclerView.setVisibility(View.VISIBLE);
-                imageView2.setVisibility(View.INVISIBLE);
-            }
-        });
+//        scanResult = mWifiAdmin.getScanResultList();
+//        System.out.println(scanResult);
+//        initRecyclerView(scanResult);
+//        wifi_recyclerView.setVisibility(View.VISIBLE);
+//        imageView2.setVisibility(View.INVISIBLE);
+
+        try {
+            networkInformationManager.findClients(UserInformationManager.token, "school", connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
+                @Override
+                public void onSuccess(HashMap<String, Integer> result) {
+                    System.out.println("find client result: " + result);
+                    scanResult = mWifiAdmin.getScanResultList();
+                    for(Map.Entry<String, Integer> entry: result.entrySet()) {    // Get intersection of scanned result and backend result
+                        for(int i = 0; i < scanResult.size(); i++) {
+                            if(entry.getKey().equals(scanResult.get(i).SSID))
+                                nearbyClient.add(scanResult.get(i));
+                        }
+                    }
+                    System.out.println(scanResult);    // Original Wifi List
+                    System.out.println(nearbyClient);  // List of hotspot that is created via this app and meet bandwidth and interval parameter settings
+                    if(nearbyClient.size() == 0) {     // No corresponding clients to meet parameter requirements, pop up a dialog
+                        showNoClientDialog();
+                    } else {
+                        initRecyclerView(nearbyClient);
+                        wifi_recyclerView.setVisibility(View.VISIBLE);
+                        imageView2.setVisibility(View.INVISIBLE);
+                    }
+                }
+
+                @Override
+                public void onNetworkFail() {
+                    System.out.println("find client failed - network.");
+                }
+
+                @Override
+                public void onFail() {
+                    System.out.println("find client failed.");
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
 
         // result info:
         // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
-
-//        fillData(getPackageName());
 
     }
 
@@ -243,6 +282,25 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     }
 
 
+    public void showNoClientDialog(){
+        LayoutInflater factory = LayoutInflater.from(this);
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        final View dialogView = factory.inflate(R.layout.fragment_no_client_dialog, null);
+//        final TextView dialogMessage = (TextView) dialogView.findViewById(R.id.oops);
+        builder.setView(dialogView);
+        builder.setTitle("Oops!");
+//        dialogMessage.setText("We didn't find ideal clients for you, please go back to last page and edit your parameters.");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent i = new Intent(getApplicationContext(), MainActivity.class);
+                startActivity(i);
+            }
+        });
+        AlertDialog dialog=builder.create();
+        dialog.show();
+    }
+
 
     public double getWifiTraffic(double time){
         double rtotalGprs = TrafficStats.getTotalRxBytes();
@@ -355,57 +413,57 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             if(configuration == null) {
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
-                    final NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
+//                    final NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
 
-                    try {
+//                    try {
                         // Get nearby client list from backend
-                        manager.findClients(UserInformationManager.token, "school", 1000, 50000, new NetworkInformationManager.OnFindClientsListener() {
-                            @Override
-                            public void onSuccess(String result) {
-                                try {
-                                    manager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
-                                        @Override
-                                        public void onSuccess(String password, int connectionId) {
-                                            Log.d(TAG, "password is: " + password);
-                                            UserInformationManager.connectionId = connectionId;
+//                        manager.findClients(UserInformationManager.token, "school", 1000000, 50000, new NetworkInformationManager.OnFindClientsListener() {
+//                            @Override
+//                            public void onSuccess(String result) {
+                        try {
+                            networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
+                                @Override
+                                public void onSuccess(String password, int connectionId) {
+                                    Log.d(TAG, "password is: " + password);
+                                    UserInformationManager.connectionId = connectionId;
 
-                                            if (selectedWifi.capabilities.contains("WEP")) {
-                                                connecting(selectedWifi, password, 2);
-                                            } else {
-                                                connecting(selectedWifi, password, 3);
-                                            }
+                                    if (selectedWifi.capabilities.contains("WEP")) {
+                                        connecting(selectedWifi, password, 2);
+                                    } else {
+                                        connecting(selectedWifi, password, 3);
+                                    }
 
-                                            newHotspotConnectionClicked();
-                                        }
-
-                                        @Override
-                                        public void onFail() {
-                                            showEditPwdDialog(selectedWifi);
-                                        }
-
-                                        @Override
-                                        public void onNetworkFail() {
-                                            showEditPwdDialog(selectedWifi);
-                                        }
-                                    });
-                                } catch (JSONException e){
-                                    e.printStackTrace();
+                                    newHotspotConnectionClicked();
                                 }
-                            }
 
-                            @Override
-                            public void onNetworkFail() {
-                                showEditPwdDialog(selectedWifi);
-                            }
+                                @Override
+                                public void onFail() {
+                                    showEditPwdDialog(selectedWifi);
+                                }
 
-                            @Override
-                            public void onFail() {
-                                showEditPwdDialog(selectedWifi);
-                            }
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
+                                @Override
+                                public void onNetworkFail() {
+                                    showEditPwdDialog(selectedWifi);
+                                }
+                            });
+                        } catch (JSONException e){
+                            e.printStackTrace();
+                        }
+//                            }
+
+//                            @Override
+//                            public void onNetworkFail() {
+//                                showEditPwdDialog(selectedWifi);
+//                            }
+//
+//                            @Override
+//                            public void onFail() {
+//                                showEditPwdDialog(selectedWifi);
+//                            }
+//                        });
+//                    } catch (JSONException e) {
+//                        e.printStackTrace();
+//                    }
                 } else {
                     Log.d(TAG, "no password.");
                     connecting(selectedWifi, null, 1);

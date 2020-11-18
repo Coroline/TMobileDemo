@@ -35,6 +35,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private Button createHotspot;
     private EditText SSID;
     private EditText password;
+    private EditText bandwidthAmount;
+    private EditText sharingDuration;
     private WifiManager wifiManager;
     private WifiConfiguration wifiConfiguration;
     private NetworkInformationManager networkInformationManager;
@@ -51,6 +53,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
         createHotspot = findViewById(R.id.createHotspot);
         SSID = findViewById((R.id.ssid));
         password = findViewById(R.id.password);
+        bandwidthAmount = findViewById(R.id.amount);
+        sharingDuration = findViewById(R.id.duration);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         wifiConfiguration = new WifiConfiguration();
         networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
@@ -128,7 +132,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                 try {
                     // todo: create a UI to set bandwidth and duration
                     // todo: location still need discussion
-                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000, 50000, callback);
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000000, 50000, callback);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

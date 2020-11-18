@@ -73,6 +73,7 @@
                 android:textSize="18sp"
                 android:background="@drawable/round_button"
                 android:textColor="#FFFFFF"
+                android:onClick="showDialog"
                 android:layout_toRightOf="@id/user_image"/>
 
         </RelativeLayout>

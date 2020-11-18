@@ -6,10 +6,12 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Service;
 import android.app.usage.UsageStatsManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
@@ -21,8 +23,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import com.example.tmobilenetworkdemo.Lib.GPSTracking;
@@ -62,8 +66,9 @@ public class MainActivity extends AppCompatActivity {
         connect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
-                startActivity(i);
+                showDialog(view);
+//                Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
+//                startActivity(i);
             }
         });
         IntentFilter intentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGEDD");
@@ -78,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
                 System.out.println("---------------------------------------");
                 GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
                 locationService = binder.getService();
-//                Location loc = locationService.getLocation();
-//                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+                Location loc = locationService.getLocation();
+                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
             }
 
             @Override
@@ -89,18 +94,41 @@ public class MainActivity extends AppCompatActivity {
         };
         getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
 
-
         Timer timer = new Timer();
         timer.schedule(new MyTask(), 0, 5000);
     }
 
 
     class MyTask extends TimerTask {
-
         @Override
         public void run() {
             System.out.println(GPSTracking.lat + " " + GPSTracking.lng);
         }
+    }
+
+
+    public void showDialog(View view){
+        LayoutInflater factory = LayoutInflater.from(this);
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        final View dialogView = factory.inflate(R.layout.fragment_connect_hotspot_parameter, null);
+        final EditText connectDurationText = (EditText) dialogView.findViewById(R.id.bandwidth_duration);
+        final EditText connectBandwidthAmountText = (EditText) dialogView.findViewById(R.id.bandwidth_amount);
+        builder.setView(dialogView);
+        builder.setTitle("Parameters");
+        builder.setPositiveButton("Scan", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putString("bandwidthDuration", connectDurationText.getText().toString());
+                bundle.putString("bandwidthAmount", connectBandwidthAmountText.getText().toString());
+                i.putExtra("data", bundle);
+                startActivity(i);
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        AlertDialog dialog=builder.create();
+        dialog.show();
     }
 
 
