@@ -13,12 +13,15 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class NetworkInformationManager {
@@ -34,6 +37,8 @@ public class NetworkInformationManager {
     private static final String findClientsPath = "find-clients";
     private static final String requestConnectionPath = "request-connection-to-client";
     private static final String updateBandwidthUsage = "update-bandwidth-usage";
+    private static final String queryBandwidthUsage = "query-bandwidth-usage";
+    private static final String clientUpdateLocation = "client-update-location";
     public static HashMap<String, Integer> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
@@ -87,6 +92,22 @@ public class NetworkInformationManager {
     }
 
     public interface OnBandwidthUpdateListener {
+        void onSuccess(String result);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnBandwidthQueryListener {
+        void onSuccess(List<ConnectedUserInfo> list);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnClientLocationUpdateListener {
         void onSuccess(String result);
 
         void onNetworkFail();
@@ -313,6 +334,105 @@ public class NetworkInformationManager {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Client query connected users and their detailed information after create a hotspot
+     * @param token User's identifier
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void queryBandwidthUsage(final String token, final OnBandwidthQueryListener l) throws JSONException {
+        JSONObject queryBandwidthInfo = new JSONObject();
+        queryBandwidthInfo.put("token", token);
+
+        Log.d(TAG, "client query bandwidth usage request: " + queryBandwidthInfo.toString());
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + queryBandwidthUsage, queryBandwidthInfo,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "client query bandwidth response -> " + response.toString());
+                        JSONArray usernameArray = response.optJSONArray("usernameList");
+                        JSONArray connectionIdsArray = response.optJSONArray("connectionIds");
+                        JSONArray bandwidthUsageArray = response.optJSONArray("bandwidthUsageList");
+                        JSONArray durationArray = response.optJSONArray("durationList");
+                        int len = usernameArray.length();
+                        List<ConnectedUserInfo> connUserList = new ArrayList<>();
+                        for(int i = 0; i < len; i++) {
+                            connUserList.add(new ConnectedUserInfo(usernameArray.optString(i), Integer.parseInt(connectionIdsArray.optString(i)), Integer.parseInt(bandwidthUsageArray.optString(i)), Integer.parseInt(durationArray.optString(i))));
+                        }
+                        l.onSuccess(connUserList);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Client sends its latest location information to the web server
+     * @param token Client's identifier
+     * @param lat   Updated latitude
+     * @param lng   Updated longitude
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void updateClientLocation(final String token, final double lat, final double lng, final OnClientLocationUpdateListener l) throws JSONException {
+        JSONObject location = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
+        location.put("latitude", String.valueOf(lat));
+        location.put("longitude", String.valueOf(lng));
+        jsonObject.put("location", location);
+        jsonObject.put("token", token);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + clientUpdateLocation, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "client update location response -> " + response.toString());
+                        l.onSuccess(response.toString());
                     }
                 }, new Response.ErrorListener() {
             @Override

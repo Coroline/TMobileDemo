@@ -61,7 +61,7 @@
         android:id="@+id/total_sharing_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="0MB"
+        android:text="0 MB"
         android:textSize="18sp"
         android:layout_marginLeft="10dp"
         app:layout_constraintStart_toEndOf="@id/total_sharing"

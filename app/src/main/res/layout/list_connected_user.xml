@@ -14,19 +14,30 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginStart="3dp"
-        android:layout_weight="0.1"
+        android:layout_weight="0.05"
         android:src="@drawable/connected_device"/>
 
     <TextView
-        android:id="@+id/device_name"
+        android:id="@+id/username"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
+        android:layout_marginStart="2dp"
         android:layout_marginTop="10dp"
         android:text="connected user 0"
         android:textColor="#6D6D6D"
         android:textSize="20sp"
-        android:layout_weight="0.8"/>
+        android:layout_weight="0.4"/>
+
+    <TextView
+        android:id="@+id/bandwidthAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="2dp"
+        android:layout_marginTop="10dp"
+        android:text="0 MB"
+        android:textColor="#6D6D6D"
+        android:textSize="20sp"
+        android:layout_weight="0.4"/>
 
     <ImageView
         android:id="@+id/deviceDetail"

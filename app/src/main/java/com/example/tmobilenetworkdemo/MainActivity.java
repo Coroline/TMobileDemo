@@ -80,11 +80,11 @@ public class MainActivity extends AppCompatActivity {
         conn = new ServiceConnection() {
             @Override
             public void onServiceConnected(ComponentName name, IBinder service) {
-                System.out.println("---------------------------------------");
+//                System.out.println("---------------------------------------");
                 GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
                 locationService = binder.getService();
-                Location loc = locationService.getLocation();
-                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+//                Location loc = locationService.getLocation();
+//                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
             }
 
             @Override
@@ -94,17 +94,17 @@ public class MainActivity extends AppCompatActivity {
         };
         getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
 
-        Timer timer = new Timer();
-        timer.schedule(new MyTask(), 0, 5000);
+//        Timer timer = new Timer();
+//        timer.schedule(new MyTask(), 0, 5000);
     }
 
 
-    class MyTask extends TimerTask {
-        @Override
-        public void run() {
-            System.out.println(GPSTracking.lat + " " + GPSTracking.lng);
-        }
-    }
+//    class MyTask extends TimerTask {
+//        @Override
+//        public void run() {
+//            System.out.println(GPSTracking.lat + " " + GPSTracking.lng);
+//        }
+//    }
 
 
     public void showDialog(View view){

@@ -13,23 +13,23 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.tmobilenetworkdemo.Model.ConnectDevice;
+import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 
 import java.util.List;
 
 public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<RecyclerViewAdapterConnectedUser.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapterConnectedUser";
 
-    private List<ConnectDevice> mConnectedDevice;
+    private List<ConnectedUserInfo> mConnectedUser;
 
-    public interface onDeviceSelectedListener {
-        void onDeviceSelected(ConnectDevice selectedDevice);
+    public interface onConnUserSelectedListener {
+        void onConnUserSelected(ConnectedUserInfo selectedConnUser);
     }
 
-    private onDeviceSelectedListener mListener;
+    private onConnUserSelectedListener mListener;
 
-    public RecyclerViewAdapterConnectedUser(List<ConnectDevice> deviceDetail, onDeviceSelectedListener mListener) {
-        this.mConnectedDevice = deviceDetail;
+    public RecyclerViewAdapterConnectedUser(List<ConnectedUserInfo> deviceDetail, onConnUserSelectedListener mListener) {
+        this.mConnectedUser = deviceDetail;
         this.mListener = mListener;
     }
 
@@ -43,14 +43,15 @@ public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<Recyc
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Log.d(TAG, "recycler wifi adapter called");
-        holder.deviceName.setText(mConnectedDevice.get(position).getIp());
-        holder.deviceDetail.setOnClickListener(new View.OnClickListener() {
+        holder.userName.setText(mConnectedUser.get(position).getUsername());
+        holder.bandwidthAmount.setText(mConnectedUser.get(position).getBandwidthUsage());
+        holder.connUserDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: clicked on: " + mConnectedDevice.get(position).getIp());
+                Log.d(TAG, "onClick: clicked on: " + mConnectedUser.get(position).getUsername());
                 if(mListener != null) {
-                    System.out.println("Successfully select a device.");
-                    mListener.onDeviceSelected(mConnectedDevice.get(position));
+                    System.out.println("Successfully select a connected user.");
+                    mListener.onConnUserSelected(mConnectedUser.get(position));
                 }
             }
         });
@@ -58,19 +59,21 @@ public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<Recyc
 
     @Override
     public int getItemCount() {
-        return mConnectedDevice.size();
+        return mConnectedUser.size();
     }
 
 
     static class ViewHolder extends RecyclerView.ViewHolder {
-        TextView deviceName;
-        ImageView deviceDetail;
+        TextView userName;
+        TextView bandwidthAmount;
+        ImageView connUserDetail;
         LinearLayout parentLayout;
 
         public ViewHolder(View view) {
             super(view);
-            deviceName = view.findViewById(R.id.device_name);
-            deviceDetail = view.findViewById(R.id.deviceDetail);
+            userName = view.findViewById(R.id.username);
+            bandwidthAmount = view.findViewById(R.id.bandwidthAmount);
+            connUserDetail = view.findViewById(R.id.deviceDetail);
             parentLayout = itemView.findViewById(R.id.mainLayout);
         }
     }
