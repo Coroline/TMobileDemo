@@ -94,28 +94,10 @@ public class NetworkInformationManager {
         void onFail();
     }
 
-
     public static NetworkInformationManager getInstance(Context c) {
         if (null == sInstance)
             sInstance = new NetworkInformationManager(c);
         return sInstance;
-    }
-
-    public void test() {
-        StringRequest stringRequest = new StringRequest(serverUrl, new Response.Listener<String>() {
-            //正确接受数据之后的回调
-            @Override
-            public void onResponse(String response) {
-                Log.d(TAG, "yeah");
-            }
-        }, new Response.ErrorListener() {//发生异常之后的监听回调
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage(), error);
-            }
-        });
-        //将创建的请求添加到请求队列当中
-        requestQueue.add(stringRequest);
     }
 
     public void requestConnection(final String token, final int clientId, final int bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
@@ -174,7 +156,7 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
-    public void registerWifiInfo(final String ssid, final String password, final String token, final String location, final int bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
+    public void registerWifiInfo(final String ssid, final String password, final double latitude, final double longitude, final int bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
         /*
         {
           "token": "Afdsfqe124",
@@ -191,11 +173,14 @@ public class NetworkInformationManager {
          */
         JSONObject hotspotInformation = new JSONObject();
         JSONObject sharingConfiguration = new JSONObject();
+        JSONObject location = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         hotspotInformation.put("ssid", ssid);
         hotspotInformation.put("pwd", password);
         sharingConfiguration.put("bandwidth", bandwidth);
         sharingConfiguration.put("duration", duration);
+        location.put("latitude", latitude);
+        location.put("longitude", longitude);
         jsonObject.put("token", UserInformationManager.token);
         jsonObject.put("location", location);
         jsonObject.put("hotspotInformation", hotspotInformation);
@@ -237,7 +222,7 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
-    public void findClients(final String token, final String location, final int bandwidth, final int duration, final OnFindClientsListener l) throws JSONException{
+    public void findClients(final String token, final double latitude, final double longitude, final int bandwidth, final int duration, final OnFindClientsListener l) throws JSONException{
         /*
         {
           "token": "Afdsfqe124",
@@ -251,6 +236,9 @@ public class NetworkInformationManager {
         JSONObject sharingConfiguration = new JSONObject();
         sharingConfiguration.put("bandwidth", bandwidth);
         sharingConfiguration.put("duration", duration);
+        JSONObject location = new JSONObject() ;
+        location.put("latitude", latitude);
+        location.put("longitude", longitude);
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("token", token);
         jsonObject.put("location", location);
@@ -313,6 +301,8 @@ public class NetworkInformationManager {
         updateBandwidthInfo.put("connectionId", connectionID);
         updateBandwidthInfo.put("bandwidthUsageSinceLastUpdate", bandwidthUsageUpdate);
 
+        Log.d(TAG, "update request: " + updateBandwidthInfo.toString());
+
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + updateBandwidthUsage, updateBandwidthInfo,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -341,7 +331,6 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
-                headers.put("Connection", "keep-alive");
                 return headers;
             }
         };

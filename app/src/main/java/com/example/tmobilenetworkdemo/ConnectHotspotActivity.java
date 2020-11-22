@@ -36,6 +36,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
@@ -123,7 +124,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //        imageView2.setVisibility(View.INVISIBLE);
 
         try {
-            networkInformationManager.findClients(UserInformationManager.token, "school", connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
+            networkInformationManager.findClients(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
                 @Override
                 public void onSuccess(HashMap<String, Integer> result) {
                     System.out.println("find client result: " + result);

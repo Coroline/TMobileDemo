@@ -21,6 +21,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.annotation.RequiresPermission;
 
+import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Wifi.MyOnStartTetheringCallback;
@@ -132,7 +133,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                 try {
                     // todo: create a UI to set bandwidth and duration
                     // todo: location still need discussion
-                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), UserInformationManager.token, "school", 1000000, 50000, callback);
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, 1000000, 50000, callback);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
