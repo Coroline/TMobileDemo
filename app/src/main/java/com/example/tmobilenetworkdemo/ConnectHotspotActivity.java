@@ -2,7 +2,6 @@ package com.example.tmobilenetworkdemo;
 
 import android.Manifest;
 import android.annotation.TargetApi;
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.app.usage.NetworkStatsManager;
@@ -47,7 +46,6 @@ import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 import org.json.JSONException;
 import org.w3c.dom.Text;
 
-import java.lang.ref.WeakReference;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -74,6 +72,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
     private long connectionStartTime = 0;
+    private long startTime = System.currentTimeMillis();
+    private long endTime = System.currentTimeMillis();
 
     double totalWifi;
     public static String wifiTraffic ;
@@ -85,9 +85,9 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private TextView bandwidthUsageHead;
     private Handler handler1= null;
     int hours = 0,minutes = 0,seconds = 0;
-    public NetworkInformationManager networkInformationManager;
-    public int connectDuration;    // Parameters for searching clients
-    public int connectionAmount;
+    private NetworkInformationManager networkInformationManager;
+    private int connectDuration;    // Parameters for searching clients
+    private int connectionAmount;
 
     private static final String TAG = "ConnectHotspotActivity";
 
@@ -126,10 +126,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         try {
             networkInformationManager.findClients(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
                 @Override
-                public void onSuccess(HashMap<String, Integer> result) {
+                public void onSuccess(HashMap<String, String> result) {
                     System.out.println("find client result: " + result);
                     scanResult = mWifiAdmin.getScanResultList();
-                    for(Map.Entry<String, Integer> entry: result.entrySet()) {    // Get intersection of scanned result and backend result
+                    for(Map.Entry<String, String> entry: result.entrySet()) {    // Get intersection of scanned result and backend result
                         for(int i = 0; i < scanResult.size(); i++) {
                             if(entry.getKey().equals(scanResult.get(i).SSID))
                                 nearbyClient.add(scanResult.get(i));
@@ -159,65 +159,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
 
+        // result info:
+        // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
 
-    private MyHandler mHandler = new MyHandler(currentBandwidthUsage, networkInformationManager);
-    private static class MyHandler extends Handler {
-        private final WeakReference<TextView> currentBandwidthUsage;
-        private final WeakReference<NetworkInformationManager> manager;
-        public MyHandler(TextView t1, NetworkInformationManager networkInformationManager) {
-            currentBandwidthUsage = new WeakReference<TextView>(t1);
-            manager = new WeakReference(networkInformationManager);
-        }
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if(msg.what == 1){
-                if(Double.parseDouble(wifiTraffic) < 1){
-                    Log.i("wifiTraffic", wifiTraffic);
-                    currentBandwidthUsage.get().setText("0" + wifiTraffic + "MB");
-                }
-                else{
-                    currentBandwidthUsage.get().setText(wifiTraffic + "MB");
-                }
-                try {
-                    manager.get().updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, (int)(Double.parseDouble(wifiTraffic) * 1111500), new NetworkInformationManager.OnBandwidthUpdateListener() {
-                        @Override
-                        public void onSuccess(String result) {
-                            System.out.println(result);
-                        }
-                        @Override
-                        public void onNetworkFail() { }
-                        @Override
-                        public void onFail() { }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private MyHandler1 mHandler1 = new MyHandler1(bandwidthUsageHead, seconds, minutes, hours);
-    private static class MyHandler1 extends Handler {
-        WeakReference<TextView> bandwidthUsageHead;
-        WeakReference<Integer> second;
-        WeakReference<Integer> minute;
-        WeakReference<Integer> hour;
-        public MyHandler1(TextView t1, int n1, int n2, int n3) {
-            bandwidthUsageHead = new WeakReference<TextView>(t1);
-            second = new WeakReference(n1);
-            minute = new WeakReference(n2);
-            hour = new WeakReference(n3);
-        }
-        @Override
-        public void handleMessage(Message msg) {
-            super.handleMessage(msg);
-            if (msg.what == 1) {
-                bandwidthUsageHead.get().setText(new DecimalFormat("00").format(hour) + ":" + new DecimalFormat("00").format(minute) + ":" + new DecimalFormat("00").format(second));
-            }
-        }
     }
 
 
@@ -230,53 +175,53 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             Toast.makeText(this, "Disconnect from WiFi", Toast.LENGTH_LONG).show();
         }
         if(wifiStr == 3){
-            mHandler = new MyHandler(currentBandwidthUsage, networkInformationManager);
-//            final Handler handler = new Handler(){
-//                public void handleMessage(Message msg){
-//                    super.handleMessage(msg);
-//                    if(msg.what == 1){
-//                        if(Double.parseDouble(wifiTraffic) < 1){
-//                            Log.i("wifiTraffic", wifiTraffic);
-//                            currentBandwidthUsage.setText("0" + wifiTraffic + "MB");
-//                        }
-//                        else{
-//                            currentBandwidthUsage.setText(wifiTraffic + "MB");
-//                        }
-//                        try {
-//                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, (int)(Double.parseDouble(wifiTraffic) * 1111500), new NetworkInformationManager.OnBandwidthUpdateListener() {
-//                                @Override
-//                                public void onSuccess(String result) {
-//                                    System.out.println(result);
-//                                }
-//
-//                                @Override
-//                                public void onNetworkFail() {
-//
-//                                }
-//
-//                                @Override
-//                                public void onFail() {
-//
-//                                }
-//                            });
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                }
-//            };
+            final Handler handler = new Handler(){
+                public void handleMessage(Message msg){
+                    super.handleMessage(msg);
+                    if(msg.what == 1){
+                        if(Double.parseDouble(wifiTraffic) < 1){
+                            Log.i("wifiTraffic", wifiTraffic);
+                            currentBandwidthUsage.setText("0" + wifiTraffic + "MB");
+                        }
+                        else{
+                            currentBandwidthUsage.setText(wifiTraffic + "MB");
+                        }
+                        System.out.println("||||||||||||||||||||||||||||||||");
+                        try {
+                            System.out.println("?????????????????????????");
+                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, (int)Double.parseDouble(wifiTraffic), new NetworkInformationManager.OnBandwidthUpdateListener() {
+                                @Override
+                                public void onSuccess(String result) {
+                                    System.out.println(result);
+                                }
+
+                                @Override
+                                public void onNetworkFail() {
+
+                                }
+
+                                @Override
+                                public void onFail() {
+
+                                }
+                            });
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            };
 
             if(wifiStr == 3){
-                mHandler1 = new MyHandler1(bandwidthUsageHead, seconds, minutes, hours);
-//                handler1 = new Handler(){
-//                    public void handleMessage(Message msg1){
-//                        super.handleMessage(msg1);
-//                        if(msg1.what == 1){
-//                            bandwidthUsageHead.setText(new DecimalFormat("00").format(hours) + ":" +
-//                                    new DecimalFormat("00").format(minutes) + ":" + new DecimalFormat("00").format(seconds));
-//                        }
-//                    }
-//                };
+                handler1 = new Handler(){
+                    public void handleMessage(Message msg1){
+                        super.handleMessage(msg1);
+                        if(msg1.what == 1){
+                            bandwidthUsageHead.setText(new DecimalFormat("00").format(hours) + ":" +
+                                    new DecimalFormat("00").format(minutes) + ":" + new DecimalFormat("00").format(seconds));
+                        }
+                    }
+                };
             }
 
             new Thread(new Runnable() {
@@ -324,14 +269,13 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         if(errorTraffic < 512){
                             errorTraffic = 1;
                         }
-                        wf += errorTraffic/1111500;
-//                        wf += errorTraffic;
+//                        wf += errorTraffic/1111500;
+                        wf += errorTraffic;
                         wifiTraffic = df.format(wf);
 //  Log.i("使用的流量", wifiTraffic + "");
                         Message message = new Message();
                         message.what = 1;
-//                        handler.sendMessage(message);
-                        mHandler.sendMessage(message);
+                        handler.sendMessage(message);
                     }
                 }
             }).start();
@@ -473,39 +417,39 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //                    final NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
 
 //                    try {
-                        // Get nearby client list from backend
+                    // Get nearby client list from backend
 //                        manager.findClients(UserInformationManager.token, "school", 1000000, 50000, new NetworkInformationManager.OnFindClientsListener() {
 //                            @Override
 //                            public void onSuccess(String result) {
-                        try {
-                            networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.getOrDefault(selectedWifi.SSID, 0), 1000000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
-                                @Override
-                                public void onSuccess(String password, int connectionId) {
-                                    Log.d(TAG, "password is: " + password);
-                                    UserInformationManager.connectionId = connectionId;
+                    try {
+                        networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.get(selectedWifi.SSID), 1000000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
+                            @Override
+                            public void onSuccess(String password, int connectionId) {
+                                Log.d(TAG, "password is: " + password);
+                                UserInformationManager.connectionId = connectionId;
 
-                                    if (selectedWifi.capabilities.contains("WEP")) {
-                                        connecting(selectedWifi, password, 2);
-                                    } else {
-                                        connecting(selectedWifi, password, 3);
-                                    }
-
-                                    newHotspotConnectionClicked();
+                                if (selectedWifi.capabilities.contains("WEP")) {
+                                    connecting(selectedWifi, password, 2);
+                                } else {
+                                    connecting(selectedWifi, password, 3);
                                 }
 
-                                @Override
-                                public void onFail() {
-                                    showEditPwdDialog(selectedWifi);
-                                }
+                                newHotspotConnectionClicked();
+                            }
 
-                                @Override
-                                public void onNetworkFail() {
-                                    showEditPwdDialog(selectedWifi);
-                                }
-                            });
-                        } catch (JSONException e){
-                            e.printStackTrace();
-                        }
+                            @Override
+                            public void onFail() {
+                                showEditPwdDialog(selectedWifi);
+                            }
+
+                            @Override
+                            public void onNetworkFail() {
+                                showEditPwdDialog(selectedWifi);
+                            }
+                        });
+                    } catch (JSONException e){
+                        e.printStackTrace();
+                    }
 //                            }
 
 //                            @Override
@@ -652,5 +596,27 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         System.out.println(mobileWifiTx / 1000000.0 + " MB");
     }
 
-
+//    @TargetApi(Build.VERSION_CODES.M)
+//    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {
+//        long mobileWifiRx = networkStatsHelper.getPackageRxBytesMobile(this) + networkStatsHelper.getPackageRxBytesWifi();
+//        networkStatsPackageRx.setText(mobileWifiRx / 1000000.0 + " MB");
+//        networkStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        long mobileWifiTx = networkStatsHelper.getPackageTxBytesMobile(this) + networkStatsHelper.getPackageTxBytesWifi();
+//        networkStatsPackageTx.setText(mobileWifiTx / 1000000.0 + " MB");
+//        networkStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
+//
+//    private void fillTrafficStatsAll() {
+//        trafficStatsAllRx.setText(TrafficStatsHelper.getAllRxBytes() / 1000000.0 + " MB");
+//        trafficStatsAllTx.setText(TrafficStatsHelper.getAllTxBytes() / 1000000.0 + " MB");
+//        trafficStatsAllRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        trafficStatsAllTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
+//
+//    private void fillTrafficStatsPackage(int uid) {
+//        trafficStatsPackageRx.setText(TrafficStatsHelper.getPackageRxBytes(uid) / 1000000.0 + " MB");
+//        trafficStatsPackageTx.setText(TrafficStatsHelper.getPackageTxBytes(uid) / 1000000.0 + " MB");
+//        trafficStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
+//        trafficStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
+//    }
 }

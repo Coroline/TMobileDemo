@@ -39,7 +39,7 @@ public class NetworkInformationManager {
     private static final String updateBandwidthUsage = "update-bandwidth-usage";
     private static final String queryBandwidthUsage = "query-bandwidth-usage";
     private static final String clientUpdateLocation = "client-update-location";
-    public static HashMap<String, Integer> ssidIdMap = new HashMap<>();
+    public static HashMap<String, String> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
         mContext = context;
@@ -56,7 +56,7 @@ public class NetworkInformationManager {
     }
 
     public interface OnFindClientsListener {
-        void onSuccess(HashMap<String, Integer> result);
+        void onSuccess(HashMap<String, String> result);
 
         void onNetworkFail();
 
@@ -121,14 +121,14 @@ public class NetworkInformationManager {
         return sInstance;
     }
 
-    public void requestConnection(final String token, final int clientId, final int bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
+    public void requestConnection(final String token, final String clientUsername, final int bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
         /*
         {
-          "token": "Asd8vch89q23",
-          "clientUserId":33,
-           "sharingConfiguration": {
-            "bandwidth": 123, // bytes
-            "duration": 3600 // seconds
+          "token": "string",
+          "clientUsername": "string",
+          "sharingConfiguration": {
+            "bandwidth": 0,
+            "duration": 0
           }
         }
          */
@@ -137,7 +137,7 @@ public class NetworkInformationManager {
         sharingConfiguration.put("bandwidth", bandwidth);
         sharingConfiguration.put("duration", duration);
         jsonObject.put("token", token);
-        jsonObject.put("clientUserId", clientId);
+        jsonObject.put("clientUsername", clientUsername);
         jsonObject.put("sharingConfiguration", sharingConfiguration);
 
         Log.d(TAG, jsonObject.toString());
@@ -170,7 +170,6 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
-                headers.put("Connection", "keep-alive");
                 return headers;
             }
         };
@@ -236,7 +235,6 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
-                headers.put("Connection", "keep-alive");
                 return headers;
             }
         };
@@ -271,17 +269,17 @@ public class NetworkInformationManager {
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "find clients response -> " + response.toString());
                         JSONArray ssidArray = response.optJSONArray("ssids");
-                        JSONArray idArray = response.optJSONArray("clientIds");
+                        JSONArray namesArray = response.optJSONArray("clientUsernames");
                         String[] ssids = new String[ssidArray.length()];
                         for (int i = 0; i < ssids.length; ++i) {
                             ssids[i] = ssidArray.optString(i);
                         }
-                        int[] ids = new int[idArray.length()];
-                        for (int i = 0; i < ids.length; ++i) {
-                            ids[i] = idArray.optInt(i);
+                        String[] names = new String[namesArray.length()];
+                        for (int i = 0; i < names.length; ++i) {
+                            names[i] = namesArray.optString(i);
                         }
                         for(int i = 0; i < ssids.length; i++) {
-                            ssidIdMap.put(ssids[i], ids[i]);
+                            ssidIdMap.put(ssids[i], names[i]);
                         }
                         l.onSuccess(ssidIdMap);
                     }
@@ -301,7 +299,6 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
-                headers.put("Connection", "keep-alive");
                 return headers;
             }
         };
@@ -466,13 +463,22 @@ public class NetworkInformationManager {
      * @param l        interface for callback functions
      * @throws JSONException
      */
-    public void registerUser(final String username, final String password, final OnRegisterUserListener l) throws JSONException {
-
+    public void registerUser(final String fullName, final String username, final String password, final OnRegisterUserListener l) throws JSONException {
+        /*
+        {
+          "credential": {
+            "username": "string",
+            "password": "string"
+          },
+          "name": "string"
+        }
+         */
         JSONObject credential = new JSONObject();
         JSONObject jsonObject = new JSONObject();
         credential.put("username", username);
         credential.put("password", password);
         jsonObject.put("credential", credential);
+        jsonObject.put("name", fullName);
 
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + registerUserPath, jsonObject,
                 new Response.Listener<JSONObject>() {
@@ -502,7 +508,6 @@ public class NetworkInformationManager {
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put("Accept", "application/json");
                 headers.put("Content-Type", "application/json; charset=UTF-8");
-                headers.put("Connection", "keep-alive");
                 return headers;
             }
         };

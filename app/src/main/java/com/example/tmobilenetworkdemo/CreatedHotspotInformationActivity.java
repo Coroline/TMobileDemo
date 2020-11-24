@@ -1,15 +1,8 @@
 package com.example.tmobilenetworkdemo;
 
-import android.annotation.TargetApi;
 import android.app.AlertDialog;
-import android.app.usage.NetworkStatsManager;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.net.wifi.ScanResult;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,44 +15,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
-import com.example.tmobilenetworkdemo.Model.ConnectDevice;
 import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
-import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
-import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class CreatedHotspotInformationActivity extends AppCompatActivity implements RecyclerViewAdapterConnectedUser.onConnUserSelectedListener {
+    private static long queryDelay = 5000;
+    private static long queryInterval = 5000;
 
     private TextView hotspotName;
     private TextView totalSharingData;
     private NetworkInformationManager manager;
+    private Timer queryUsageTimer;
     private static final String TAG = "CreatedHotspotInformationActivity";
 
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_created_hotspot_info);
-        hotspotName = findViewById(R.id.hotspot_name);
-        totalSharingData = findViewById(R.id.total_sharing_data);
-        manager = NetworkInformationManager.getInstance(getApplicationContext());
-
-        Intent intent = getIntent();
-        Bundle bundle=intent.getBundleExtra("data");
-        String nameSSID = bundle.getString("hotspotName");
-        hotspotName.setText(nameSSID);
-
-        try {
-            Thread.sleep(5 * 1000);
-            System.out.println("Current time: " + new Date());
+    private class QueryTimerTask extends TimerTask {
+        @Override
+        public void run() {
             try {
                 manager.queryBandwidthUsage(UserInformationManager.token, new NetworkInformationManager.OnBandwidthQueryListener() {
                     @Override
@@ -87,9 +64,23 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                 e.printStackTrace();
             }
         }
-        catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_created_hotspot_info);
+        hotspotName = findViewById(R.id.hotspot_name);
+        totalSharingData = findViewById(R.id.total_sharing_data);
+        manager = NetworkInformationManager.getInstance(getApplicationContext());
+        queryUsageTimer = new Timer();
+
+        Intent intent = getIntent();
+        Bundle bundle=intent.getBundleExtra("data");
+        String nameSSID = bundle.getString("hotspotName");
+        hotspotName.setText(nameSSID);
+
+        startQueryUsage(queryDelay, queryInterval);
 
 //        List<ConnectedUserInfo> l = new ArrayList<>();
 //        int totalUsage = 0;
@@ -109,6 +100,13 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+    private void startQueryUsage(long delay, long interval) {
+        queryUsageTimer.schedule(new QueryTimerTask(), delay, interval);
+    }
+
+    private void stopQueryUsage() {
+        queryUsageTimer.cancel();
+    }
 
     @Override
     public void onConnUserSelected(ConnectedUserInfo selectedConnUser) {

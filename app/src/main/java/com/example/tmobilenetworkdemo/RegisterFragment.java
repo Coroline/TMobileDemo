@@ -104,7 +104,7 @@ public class RegisterFragment extends Fragment {
 //                        }
 //                    });
                     try {
-                        manager.registerUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
+                        manager.registerUser(fullName.getText().toString(), username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
                             @Override
                             public void onSuccess(String token) {
                                 Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
