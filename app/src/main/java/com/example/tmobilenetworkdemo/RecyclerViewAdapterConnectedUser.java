@@ -44,7 +44,7 @@ public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<Recyc
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Log.d(TAG, "recycler wifi adapter called");
         holder.userName.setText(mConnectedUser.get(position).getUsername());
-        holder.bandwidthAmount.setText(mConnectedUser.get(position).getBandwidthUsage());
+        holder.bandwidthAmount.setText(String.valueOf(mConnectedUser.get(position).getBandwidthUsage()) + " MB");
         holder.connUserDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

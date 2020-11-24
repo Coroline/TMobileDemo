@@ -19,6 +19,7 @@ import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 
 import org.json.JSONException;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -83,6 +84,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         startQueryUsage(queryDelay, queryInterval);
 
 //        List<ConnectedUserInfo> l = new ArrayList<>();
+//        l.add(new ConnectedUserInfo("nxnxnx", 2, 0, 0));
 //        int totalUsage = 0;
 //        for(ConnectedUserInfo e: l) {
 //            totalUsage += e.getBandwidthUsage();
@@ -117,8 +119,8 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         builder.setTitle(selectedConnUser.getUsername());
         TextView curBandwidthUsage = dialogView.findViewById(R.id.user_bandwidth_amount);
         TextView curBandwidthDuration = dialogView.findViewById(R.id.user_bandwidth_duration);
-        curBandwidthUsage.setText(selectedConnUser.getBandwidthUsage());
-        curBandwidthDuration.setText(selectedConnUser.getDuration());
+        curBandwidthUsage.setText(String.valueOf(selectedConnUser.getBandwidthUsage()));
+        curBandwidthDuration.setText(String.valueOf(selectedConnUser.getDuration()));
         builder.setPositiveButton("OK", null);
         AlertDialog dialog=builder.create();
         dialog.show();
