@@ -121,7 +121,7 @@ public class NetworkInformationManager {
         return sInstance;
     }
 
-    public void requestConnection(final String token, final String clientUsername, final int bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
+    public void requestConnection(final String token, final String clientUsername, final double bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
         /*
         {
           "token": "string",
@@ -176,7 +176,7 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
-    public void registerWifiInfo(final String ssid, final String password, final double latitude, final double longitude, final int bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
+    public void registerWifiInfo(final String ssid, final String password, final double latitude, final double longitude, final double bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
         /*
         {
           "token": "Afdsfqe124",
@@ -313,7 +313,7 @@ public class NetworkInformationManager {
      * @param bandwidthUsageUpdate Bandwidth usage amount to add
      * @param l
      */
-    public void updateBandwidthUsage(final String token, final int connectionID, final int bandwidthUsageUpdate, final OnBandwidthUpdateListener l) throws JSONException {
+    public void updateBandwidthUsage(final String token, final int connectionID, final double bandwidthUsageUpdate, final OnBandwidthUpdateListener l) throws JSONException {
         JSONObject updateBandwidthInfo = new JSONObject();
         updateBandwidthInfo.put("token", token);
         updateBandwidthInfo.put("connectionId", connectionID);
@@ -335,6 +335,7 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                Log.e(TAG, error.getMessage());
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
@@ -380,7 +381,11 @@ public class NetworkInformationManager {
                         int len = usernameArray.length();
                         List<ConnectedUserInfo> connUserList = new ArrayList<>();
                         for(int i = 0; i < len; i++) {
-                            connUserList.add(new ConnectedUserInfo(usernameArray.optString(i), Integer.parseInt(connectionIdsArray.optString(i)), Integer.parseInt(bandwidthUsageArray.optString(i)), Integer.parseInt(durationArray.optString(i))));
+                            try {
+                                connUserList.add(new ConnectedUserInfo(usernameArray.optString(i), Integer.parseInt(connectionIdsArray.optString(i)), Double.parseDouble(bandwidthUsageArray.optString(i)), Integer.parseInt(durationArray.optString(i))));
+                            } catch (NumberFormatException e) {
+                                e.printStackTrace();
+                            }
                         }
                         l.onSuccess(connUserList);
                     }

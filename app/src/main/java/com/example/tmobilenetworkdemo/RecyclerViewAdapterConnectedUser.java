@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 
+import java.text.DecimalFormat;
 import java.util.List;
 
 public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<RecyclerViewAdapterConnectedUser.ViewHolder> {
@@ -44,7 +45,12 @@ public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<Recyc
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Log.d(TAG, "recycler wifi adapter called");
         holder.userName.setText(mConnectedUser.get(position).getUsername());
-        holder.bandwidthAmount.setText(String.valueOf(mConnectedUser.get(position).getBandwidthUsage()) + " MB");
+
+        double total = mConnectedUser.get(position).getBandwidthUsage();
+        DecimalFormat df = new DecimalFormat("#.00");
+        String output = df.format(total);
+
+        holder.bandwidthAmount.setText(output + " MB");
         holder.connUserDetail.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

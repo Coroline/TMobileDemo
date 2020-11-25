@@ -30,6 +30,8 @@ import com.example.tmobilenetworkdemo.Wifi.WifiHotUtil;
 
 import org.json.JSONException;
 
+import java.text.ParseException;
+
 
 public class CreateHotspotActivity extends AppCompatActivity {
 
@@ -133,9 +135,12 @@ public class CreateHotspotActivity extends AppCompatActivity {
                 try {
                     // todo: create a UI to set bandwidth and duration
                     // todo: location still need discussion
-                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, 1000000, 50000, callback);
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
                 } catch (JSONException e) {
                     e.printStackTrace();
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Parse error! Please check your input!" , Toast.LENGTH_LONG).show();
                 }
 
 //                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);

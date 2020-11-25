@@ -3,11 +3,11 @@ package com.example.tmobilenetworkdemo.Model;
 public class ConnectedUserInfo {
     public String username;
     public int connectionId;
-    public int bandwidthUsage;
+    public double bandwidthUsage;
     public int duration;
 
     public ConnectedUserInfo() {}
-    public ConnectedUserInfo(String username, int connectionId, int bandwidthUsage, int duration) {
+    public ConnectedUserInfo(String username, int connectionId, double bandwidthUsage, int duration) {
         this.username = username;
         this.connectionId = connectionId;
         this.bandwidthUsage = bandwidthUsage;
@@ -15,6 +15,6 @@ public class ConnectedUserInfo {
     }
 
     public String getUsername() { return username; }
-    public int getBandwidthUsage() { return bandwidthUsage; }
+    public double getBandwidthUsage() { return bandwidthUsage; }
     public int getDuration() { return duration; }
 }

@@ -19,6 +19,7 @@ import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 
 import org.json.JSONException;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -43,11 +44,16 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                     @Override
                     public void onSuccess(List<ConnectedUserInfo> list) {
                         Log.d(TAG, "Client find connected user successfully.");
-                        int totalUsage = 0;
+                        double totalUsage = 0;
                         for (ConnectedUserInfo e : list) {
                             totalUsage += e.getBandwidthUsage();
                         }
-                        totalSharingData.setText(totalUsage + " MB");
+                        DecimalFormat df = new DecimalFormat("#.00");
+                        String output = df.format(totalUsage);
+                        if(totalUsage < 1.0) {
+                            output = "0" + output;
+                        }
+                        totalSharingData.setText(output + " MB");
                         initRecyclerView(list);
                     }
 

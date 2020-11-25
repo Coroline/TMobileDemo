@@ -78,6 +78,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     double totalWifi;
     public static String wifiTraffic ;
     public static double wf = 0;
+    public static double lastWf = 0;
     private TextView currentBandwidthUsage;
     private WifiManager wifiManager;
     public static int wifiStr;
@@ -186,12 +187,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         else{
                             currentBandwidthUsage.setText(wifiTraffic + "MB");
                         }
-                        System.out.println("||||||||||||||||||||||||||||||||");
                         try {
-                            System.out.println("?????????????????????????");
-                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, (int)Double.parseDouble(wifiTraffic), new NetworkInformationManager.OnBandwidthUpdateListener() {
+                            final double currentWf = Double.parseDouble(wifiTraffic);
+                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, currentWf-lastWf, new NetworkInformationManager.OnBandwidthUpdateListener() {
                                 @Override
                                 public void onSuccess(String result) {
+                                    lastWf = currentWf;
                                     System.out.println(result);
                                 }
 
@@ -269,8 +270,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         if(errorTraffic < 512){
                             errorTraffic = 1;
                         }
-//                        wf += errorTraffic/1111500;
-                        wf += errorTraffic;
+                        wf += errorTraffic/1111500;
+//                        wf += errorTraffic;
                         wifiTraffic = df.format(wf);
 //  Log.i("使用的流量", wifiTraffic + "");
                         Message message = new Message();
