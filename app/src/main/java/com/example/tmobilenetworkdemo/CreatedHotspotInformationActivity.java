@@ -143,7 +143,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
         Timer timer = new Timer();
         timer.schedule(new MyTask(), 0, 5000);
-        
+
 
         startQueryUsage(queryDelay, queryInterval);
     }
