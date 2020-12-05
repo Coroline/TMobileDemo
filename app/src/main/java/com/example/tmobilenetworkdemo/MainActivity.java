@@ -16,6 +16,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Build;
@@ -25,14 +26,18 @@ import android.provider.Settings;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Receiver.HotSpotIntentReceiver;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -45,6 +50,9 @@ public class MainActivity extends AppCompatActivity {
     static final int MY_PERMISSIONS_MANAGE_WRITE_SETTINGS = 100;
     private GPSTracking locationService;
     private ServiceConnection conn;
+    private LinearLayout homePage;
+    private LinearLayout account;
+    private final static String TAG = MainActivity.class.getSimpleName();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -52,8 +60,15 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+//        Window _window = getWindow();
+//        WindowManager.LayoutParams params = _window.getAttributes();
+//        params.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE;
+//        _window.setAttributes(params);
+
         create = findViewById(R.id.create);
         connect = findViewById(R.id.connect);
+        homePage = findViewById(R.id.home_page);
+        account = findViewById(R.id.account);
         settingPermission();
         requestPermissions();
         create.setOnClickListener(new View.OnClickListener() {
@@ -67,12 +82,17 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 showDialog(view);
-//                Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
-//                startActivity(i);
             }
         });
         IntentFilter intentFilter = new IntentFilter("android.net.wifi.WIFI_AP_STATE_CHANGEDD");
         getApplicationContext().registerReceiver(new HotSpotIntentReceiver(), intentFilter);
+        account.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(MainActivity.this, AccountActivity.class);
+                startActivity(i);
+            }
+        });
 
 
         // Location update service
@@ -98,7 +118,6 @@ public class MainActivity extends AppCompatActivity {
 //        timer.schedule(new MyTask(), 0, 5000);
     }
 
-
 //    class MyTask extends TimerTask {
 //        @Override
 //        public void run() {
@@ -106,6 +125,45 @@ public class MainActivity extends AppCompatActivity {
 //        }
 //    }
 
+
+//    @Override
+//    protected void onStart() {
+//        super.onStart();
+////        if (Build.VERSION.SDK_INT < 19 || !checkDeviceHasNavigationBar(this)) {
+////            return;
+////        } else {
+////            // 主要就是通过设置特定的属性，来控制Navigationbar的显示，有兴趣的同学可以去查查相关介绍
+////            int flag = (View.SYSTEM_UI_FLAG_VISIBLE
+////                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+////            decorView.setSystemUiVisibility(flag);
+////        }
+//        if(Build.VERSION.SDK_INT >= 19 && !checkDeviceHasNavigationBar(this)) {
+//            getParent().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION);
+//        }
+//    }
+
+
+    private boolean checkDeviceHasNavigationBar(Context context) {
+        boolean hasNavigationBar = false;
+        Resources rs = context.getResources();
+        int id = rs.getIdentifier("config_showNavigationBar", "bool", "android");
+        if (id > 0) {
+            hasNavigationBar = rs.getBoolean(id);
+        }
+        try {
+            Class systemPropertiesClass = Class.forName("android.os.SystemProperties");
+            Method m = systemPropertiesClass.getMethod("get", String.class);
+            String navBarOverride = (String) m.invoke(systemPropertiesClass, "qemu.hw.mainkeys");
+            if ("1".equals(navBarOverride)) {
+                hasNavigationBar = false;
+            } else if ("0".equals(navBarOverride)) {
+                hasNavigationBar = true;
+            }
+        } catch (Exception e) {
+            Log.w(TAG, e);
+        }
+        return hasNavigationBar;
+    }
 
     public void showDialog(View view){
         LayoutInflater factory = LayoutInflater.from(this);
@@ -118,17 +176,31 @@ public class MainActivity extends AppCompatActivity {
         builder.setPositiveButton("Scan", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("bandwidthDuration", connectDurationText.getText().toString());
-                bundle.putString("bandwidthAmount", connectBandwidthAmountText.getText().toString());
-                i.putExtra("data", bundle);
-                startActivity(i);
+                if(isNumeric(connectDurationText.getText().toString()) && isNumeric(connectBandwidthAmountText.getText().toString())) {
+                    Intent i = new Intent(getApplicationContext(), ConnectHotspotActivity.class);
+                    Bundle bundle = new Bundle();
+                    bundle.putString("bandwidthDuration", connectDurationText.getText().toString());
+                    bundle.putString("bandwidthAmount", connectBandwidthAmountText.getText().toString());
+                    i.putExtra("data", bundle);
+                    startActivity(i);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Duration and bandwidth amount must be integers. Please enter your settings again.", Toast.LENGTH_LONG).show();
+                }
             }
         });
         builder.setNegativeButton(android.R.string.cancel, null);
         AlertDialog dialog=builder.create();
         dialog.show();
+    }
+
+
+    public boolean isNumeric(String str){
+        for (int i = 0; i < str.length(); i++){
+            if (!Character.isDigit(str.charAt(i))){
+                return false;
+            }
+        }
+        return true;
     }
 
 

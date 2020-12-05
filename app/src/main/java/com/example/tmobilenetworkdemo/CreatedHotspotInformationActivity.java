@@ -31,6 +31,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     private static long queryInterval = 5000;
 
     private TextView hotspotName;
+    private TextView backButtonText;
     private TextView totalSharingData;
     private NetworkInformationManager manager;
     private Timer queryUsageTimer;
@@ -79,8 +80,16 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         setContentView(R.layout.activity_created_hotspot_info);
         hotspotName = findViewById(R.id.hotspot_name);
         totalSharingData = findViewById(R.id.total_sharing_data);
+        backButtonText = findViewById(R.id.backButtonText);
         manager = NetworkInformationManager.getInstance(getApplicationContext());
         queryUsageTimer = new Timer();
+
+        backButtonText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                back(view);
+            }
+        });
 
         Intent intent = getIntent();
         Bundle bundle=intent.getBundleExtra("data");
@@ -119,7 +128,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     @Override
     public void onConnUserSelected(ConnectedUserInfo selectedConnUser) {
         LayoutInflater factory = LayoutInflater.from(this);
-        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = factory.inflate(R.layout.dialog_connected_user_detail, null);
         builder.setView(dialogView);
         builder.setTitle(selectedConnUser.getUsername());
@@ -130,5 +139,17 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         builder.setPositiveButton("OK", null);
         AlertDialog dialog=builder.create();
         dialog.show();
+    }
+
+    /**
+     * Use Android's stack to take user to the previous screen.
+     */
+    public void back(View view) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -43,6 +44,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private WifiManager wifiManager;
     private WifiConfiguration wifiConfiguration;
     private NetworkInformationManager networkInformationManager;
+    private TextView backButtonText;
     private boolean mIsConnectingWifi = false;
     private boolean mIsFirstReceiveConnected = false;
     private WifiAdmin mWifiAdmin;
@@ -57,6 +59,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
         SSID = findViewById((R.id.ssid));
         password = findViewById(R.id.password);
         bandwidthAmount = findViewById(R.id.amount);
+        backButtonText = findViewById(R.id.backButtonText);
         sharingDuration = findViewById(R.id.duration);
         wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
         wifiConfiguration = new WifiConfiguration();
@@ -64,6 +67,12 @@ public class CreateHotspotActivity extends AppCompatActivity {
         mWifiAdmin = new WifiAdmin(getApplicationContext());
         mWifiHotUtil = WifiHotUtil.getInstance(getApplicationContext());
 
+        backButtonText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                back(view);
+            }
+        });
 
         requestPermissions();
         createHotspot.setOnClickListener(new View.OnClickListener() {
@@ -99,57 +108,70 @@ public class CreateHotspotActivity extends AppCompatActivity {
 //                    mWifiHotUtil.hotspotOreo(true, callback);
 //                }
                 // todo: register information
-                NetworkInformationManager.OnStartSharingListener callback = new NetworkInformationManager.OnStartSharingListener() {
-                    @Override
-                    public void onSuccess(String result) {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
-                                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
-                                Bundle bundle = new Bundle();
-                                bundle.putString("hotspotName", SSID.getText().toString());
-                                i.putExtra("data", bundle);
-                                startActivity(i);
-                            }
-                        });
-                    }
+                if(isNumeric(bandwidthAmount.getText().toString()) && isNumeric(sharingDuration.getText().toString())) {
+                    NetworkInformationManager.OnStartSharingListener callback = new NetworkInformationManager.OnStartSharingListener() {
+                        @Override
+                        public void onSuccess(String result) {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
+                                    Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
+                                    Bundle bundle = new Bundle();
+                                    bundle.putString("hotspotName", SSID.getText().toString());
+                                    i.putExtra("data", bundle);
+                                    startActivity(i);
+                                }
+                            });
+                        }
 
-                    @Override
-                    public void onNetworkFail() {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    }
+                        @Override
+                        public void onNetworkFail() {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
 
-                    @Override
-                    public void onFail() {
-                        runOnUiThread(new Runnable() {
-                            public void run() {
-                                Toast.makeText(getApplicationContext(), "unknown error", Toast.LENGTH_LONG).show();
-                            }
-                        });
+                        @Override
+                        public void onFail() {
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    Toast.makeText(getApplicationContext(), "unknown error", Toast.LENGTH_LONG).show();
+                                }
+                            });
+                        }
+                    };
+                    try {
+                        // todo: location still need discussion
+                        networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        Toast.makeText(getApplicationContext(), "Parse error! Please check your input!", Toast.LENGTH_LONG).show();
                     }
-                };
-                try {
-                    // todo: create a UI to set bandwidth and duration
-                    // todo: location still need discussion
-                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    Toast.makeText(getApplicationContext(), "Parse error! Please check your input!" , Toast.LENGTH_LONG).show();
-                }
 
 //                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
 //                Bundle bundle = new Bundle();
 //                bundle.putString("hotspotName", SSID.getText().toString());
 //                i.putExtra("data", bundle);
 //                startActivity(i);
+                } else {
+                    Toast.makeText(getApplicationContext(), "Duration and bandwidth amount must be integers. Please enter your settings again.", Toast.LENGTH_LONG).show();
+                }
             }
         });
+    }
+
+
+    public boolean isNumeric(String str){
+        for (int i = 0; i < str.length(); i++){
+            if (!Character.isDigit(str.charAt(i))){
+                return false;
+            }
+        }
+        return true;
     }
 
 
@@ -159,5 +181,17 @@ public class CreateHotspotActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
+    }
+
+    /**
+     * Use Android's stack to take user to the previous screen.
+     */
+    public void back(View view) {
+        onBackPressed();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
 }

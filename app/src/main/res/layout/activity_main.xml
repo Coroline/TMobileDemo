@@ -6,28 +6,30 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:orientation="vertical">-->
 
         <TextView
             android:id="@+id/header"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginLeft="30dp"
             android:layout_marginTop="120dp"
             android:text="Please choose your identity"
             android:textColor="@color/colorPrimary"
             android:textSize="28sp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
         <RelativeLayout
             android:id="@+id/client"
             android:layout_width="match_parent"
             android:layout_marginTop="40dp"
-            android:layout_height="120dp">
+            android:layout_height="120dp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/header">
 
             <ImageView
                 android:id="@+id/client_image"
@@ -55,7 +57,10 @@
             android:layout_width="match_parent"
             android:layout_height="120dp"
             android:layout_marginTop="100dp"
-            android:layout_below="@id/client">
+            android:layout_marginBottom="140dp"
+            android:layout_below="@id/client"
+            app:layout_constraintLeft_toLeftOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/client">
 
             <ImageView
                 android:id="@+id/user_image"
@@ -78,5 +83,71 @@
 
         </RelativeLayout>
 
-    </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/bottom_nav_bar"
+            android:layout_width="match_parent"
+            android:layout_height="50dip"
+            android:layout_weight="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:gravity="center|bottom"
+            android:background="@drawable/bottom_navbar_bg"
+            android:orientation="horizontal" >
+
+            <LinearLayout
+                android:layout_weight="1"
+                android:id="@+id/home_page"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:src="@drawable/homepage_selected" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="5dp"
+                    android:layout_weight="0.5"
+                    android:text="Home"
+                    android:textSize="18sp"
+                    android:textColor="@color/colorPrimary"/>
+            </LinearLayout>
+
+            <View
+                android:layout_width="1dip"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal|center"
+                android:layout_weight="0.005"
+                android:background="#EAEAEA" />
+
+            <LinearLayout
+                android:id="@+id/account"
+                android:layout_width="wrap_content"
+                android:layout_gravity="center_horizontal|center"
+                android:orientation="horizontal"
+                android:layout_weight="1"
+                android:layout_height="wrap_content">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:src="@drawable/user_nav"/>
+                <TextView
+                    android:layout_marginTop="5dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="0.5"
+                    android:text="Account"
+                    android:textSize="18sp"
+                    android:textColor="@color/accent_grey"/>
+            </LinearLayout>
+
+        </LinearLayout>
+
+<!--    </LinearLayout>-->
 </androidx.constraintlayout.widget.ConstraintLayout>

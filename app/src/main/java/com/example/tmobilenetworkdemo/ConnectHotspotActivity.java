@@ -63,6 +63,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private WifiAdmin mWifiAdmin;
     private TextView currentConnection;
     private RecyclerView wifi_recyclerView;
+    private TextView backButtonText;
     private ImageView imageView2;
     List<ScanResult> scanResult = new ArrayList<>();
     List<ScanResult> nearbyClient = new ArrayList<>();
@@ -96,7 +97,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_connect_hotspot);
-//        scan = findViewById(R.id.scan);
+        backButtonText = findViewById(R.id.backButtonText);
         currentConnection = findViewById(R.id.current_internet);
         wifi_recyclerView = findViewById(R.id.wifi_recyclerView);
         imageView2 = findViewById(R.id.imageView2);
@@ -105,6 +106,13 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         currentBandwidthUsage = findViewById(R.id.current_bandwidth_usage);
         bandwidthUsageHead = findViewById(R.id.bandwidth_usage_head);
         networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
+
+        backButtonText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                back(view);
+            }
+        });
 
         Intent intent = getIntent();
         Bundle bundle=intent.getBundleExtra("data");
@@ -576,48 +584,15 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //        ad.start();
 //    }
 
-
-    private void fillData(String packageName) {
-        int uid = PackageManagerHelper.getPackageUid(this, packageName);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            NetworkStatsManager networkStatsManager = (NetworkStatsManager) getApplicationContext().getSystemService(Context.NETWORK_STATS_SERVICE);
-            NetworkStatsHelper networkStatsHelper = new NetworkStatsHelper(networkStatsManager, uid);
-            fillNetworkStatsAll(networkStatsHelper);
-//            fillNetworkStatsPackage(uid, networkStatsHelper);
-        }
-//        fillTrafficStatsAll();
-//        fillTrafficStatsPackage(uid);
+    /**
+     * Use Android's stack to take user to the previous screen.
+     */
+    public void back(View view) {
+        onBackPressed();
     }
 
-    @TargetApi(Build.VERSION_CODES.M)
-    private void fillNetworkStatsAll(NetworkStatsHelper networkStatsHelper) {
-        long mobileWifiRx = networkStatsHelper.getAllRxBytesMobile(this) + networkStatsHelper.getAllRxBytesWifi();
-        long mobileWifiTx = networkStatsHelper.getAllTxBytesMobile(this) + networkStatsHelper.getAllTxBytesWifi();
-        System.out.println(mobileWifiRx / 1000000.0 + " MB");
-        System.out.println(mobileWifiTx / 1000000.0 + " MB");
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
     }
-
-//    @TargetApi(Build.VERSION_CODES.M)
-//    private void fillNetworkStatsPackage(int uid, NetworkStatsHelper networkStatsHelper) {
-//        long mobileWifiRx = networkStatsHelper.getPackageRxBytesMobile(this) + networkStatsHelper.getPackageRxBytesWifi();
-//        networkStatsPackageRx.setText(mobileWifiRx / 1000000.0 + " MB");
-//        networkStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
-//        long mobileWifiTx = networkStatsHelper.getPackageTxBytesMobile(this) + networkStatsHelper.getPackageTxBytesWifi();
-//        networkStatsPackageTx.setText(mobileWifiTx / 1000000.0 + " MB");
-//        networkStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
-//    }
-//
-//    private void fillTrafficStatsAll() {
-//        trafficStatsAllRx.setText(TrafficStatsHelper.getAllRxBytes() / 1000000.0 + " MB");
-//        trafficStatsAllTx.setText(TrafficStatsHelper.getAllTxBytes() / 1000000.0 + " MB");
-//        trafficStatsAllRx.setTextColor(Color.parseColor("#FFFFFF"));
-//        trafficStatsAllTx.setTextColor(Color.parseColor("#FFFFFF"));
-//    }
-//
-//    private void fillTrafficStatsPackage(int uid) {
-//        trafficStatsPackageRx.setText(TrafficStatsHelper.getPackageRxBytes(uid) / 1000000.0 + " MB");
-//        trafficStatsPackageTx.setText(TrafficStatsHelper.getPackageTxBytes(uid) / 1000000.0 + " MB");
-//        trafficStatsPackageRx.setTextColor(Color.parseColor("#FFFFFF"));
-//        trafficStatsPackageTx.setTextColor(Color.parseColor("#FFFFFF"));
-//    }
 }

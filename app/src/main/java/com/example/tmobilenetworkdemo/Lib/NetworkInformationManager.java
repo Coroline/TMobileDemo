@@ -14,6 +14,7 @@ import com.android.volley.toolbox.JsonRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
+import com.example.tmobilenetworkdemo.Model.TransactionInfo;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -34,11 +35,15 @@ public class NetworkInformationManager {
     private static final String loginPath = "login-app-user";
     private static final String registerUserPath = "register-app-user";
     private static final String startSharingPath = "start-sharing";
+    private static final String stopSharingPath = "stop-sharing";
+    private static final String disconnectUserPath = "disconnect_user";
     private static final String findClientsPath = "find-clients";
     private static final String requestConnectionPath = "request-connection-to-client";
     private static final String updateBandwidthUsage = "update-bandwidth-usage";
     private static final String queryBandwidthUsage = "query-bandwidth-usage";
     private static final String clientUpdateLocation = "client-update-location";
+    private static final String getAllReceipts = "get-all-receipts";
+    private static final String queryCredit = "query-credit";
     public static HashMap<String, String> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
@@ -109,6 +114,38 @@ public class NetworkInformationManager {
 
     public interface OnClientLocationUpdateListener {
         void onSuccess(String result);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnTransactionQueryListener {
+        void onSuccess(List<TransactionInfo> list);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnCreditQueryListener {
+        void onSuccess(double credit);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnStopSharingListener {
+        void onSuccess(Boolean status);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnDisconnectUserListener {
+        void onSuccess(Boolean status);
 
         void onNetworkFail();
 
@@ -435,6 +472,195 @@ public class NetworkInformationManager {
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "client update location response -> " + response.toString());
                         l.onSuccess(response.toString());
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Retrieve all transaction history from the web server
+     * @param token Client or user identifier
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void getAllReceipts(final String token, final OnTransactionQueryListener l) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + getAllReceipts, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "transaction query response -> " + response.toString());
+                        JSONArray receiptArray = response.optJSONArray("usernameList");
+                        int len = receiptArray.length();
+                        List<TransactionInfo> transactionList = new ArrayList<>();
+                        for(int i = 0; i < len; i++) {
+                            try {
+                                JSONObject item = receiptArray.getJSONObject(i);
+                                transactionList.add(new TransactionInfo(item.getString("sessionId"), item.getString("userName"), item.getString("clientName"), Double.parseDouble(item.getString("totalBandwidth")), Double.parseDouble(item.getString("totalCreditsTransferred")), Integer.parseInt(item.getString("totalDuration")), item.getString("timestamp")));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        l.onSuccess(transactionList);
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Query current credit
+     * @param token Client or user identifier
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void getCredit(final String token, final OnCreditQueryListener l) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + queryCredit, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "credit query response -> " + response.toString());
+                        try {
+                            l.onSuccess(Double.parseDouble(response.getString("credit")));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Stop sharing bandwidth
+     * @param token Client or user identifier
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void stopSharing(final String token, final OnStopSharingListener l) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + stopSharingPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "stop sharing response -> " + response.toString());
+                        try {
+                            l.onSuccess(Boolean.parseBoolean(response.getString("status")));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+
+    /**
+     * Disconnect user
+     * @param token Client or user identifier
+     * @param connectionID Identifier of hotspot connection
+     * @param l     Interface for callback functions
+     * @throws JSONException
+     */
+    public void disconnectUser(final String token, final int connectionID, final OnDisconnectUserListener l) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+        jsonObject.put("connectionId", connectionID);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + disconnectUserPath, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "disconnect user response -> " + response.toString());
+                        try {
+                            l.onSuccess(Boolean.parseBoolean(response.getString("status")));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }, new Response.ErrorListener() {
             @Override

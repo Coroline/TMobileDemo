@@ -42,6 +42,7 @@
         <activity android:name=".RegisterLoginActivity"
             android:theme="@style/AppTheme.NoActionBar" android:noHistory="true"/>
         <activity android:name=".CreatedHotspotInformationActivity"/>
+        <activity android:name=".AccountActivity"/>
 
         <service android:name=".Lib.GPSTracking"/>
 
