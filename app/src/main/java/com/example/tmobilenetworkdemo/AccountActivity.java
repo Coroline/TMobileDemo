@@ -38,7 +38,7 @@ public class AccountActivity extends AppCompatActivity implements RecyclerViewAd
         username = findViewById(R.id.username_account);
         curCredit = findViewById(R.id.credit_account_value);
         home_page = findViewById(R.id.home_page);
-        networkInformationManager = NetworkInformationManager.getInstance(getApplication());
+        networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
         username.setText(UserInformationManager.username);
 
         home_page.setOnClickListener(new View.OnClickListener() {

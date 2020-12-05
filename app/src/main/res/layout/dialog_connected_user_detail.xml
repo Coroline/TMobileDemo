@@ -68,4 +68,19 @@
             android:gravity="right"
             android:textSize="18sp"/>
     </LinearLayout>
+
+    <Button
+        android:id="@+id/disconnectUser"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:layout_marginTop="30dp"
+        android:background="@drawable/btn_custom"
+        android:text="Disconnect this user"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="18sp"
+        android:layout_gravity="center"
+        />
 </LinearLayout>

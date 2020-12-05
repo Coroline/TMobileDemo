@@ -35,7 +35,10 @@ import android.widget.Toast;
 
 import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
+import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
 import com.example.tmobilenetworkdemo.Receiver.HotSpotIntentReceiver;
+
+import org.json.JSONException;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -52,6 +55,7 @@ public class MainActivity extends AppCompatActivity {
     private ServiceConnection conn;
     private LinearLayout homePage;
     private LinearLayout account;
+    private NetworkInformationManager manager;
     private final static String TAG = MainActivity.class.getSimpleName();
 
     @RequiresApi(api = Build.VERSION_CODES.M)
@@ -60,15 +64,11 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        Window _window = getWindow();
-//        WindowManager.LayoutParams params = _window.getAttributes();
-//        params.systemUiVisibility = View.SYSTEM_UI_FLAG_HIDE_NAVIGATION|View.SYSTEM_UI_FLAG_IMMERSIVE;
-//        _window.setAttributes(params);
-
         create = findViewById(R.id.create);
         connect = findViewById(R.id.connect);
         homePage = findViewById(R.id.home_page);
         account = findViewById(R.id.account);
+        manager = NetworkInformationManager.getInstance(getApplicationContext());
         settingPermission();
         requestPermissions();
         create.setOnClickListener(new View.OnClickListener() {
@@ -96,32 +96,58 @@ public class MainActivity extends AppCompatActivity {
 
 
         // Location update service
-        Intent serviceIntent = new Intent(this, GPSTracking.class);
-        conn = new ServiceConnection() {
-            @Override
-            public void onServiceConnected(ComponentName name, IBinder service) {
-//                System.out.println("---------------------------------------");
-                GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
-                locationService = binder.getService();
+//        Intent serviceIntent = new Intent(this, GPSTracking.class);
+//        conn = new ServiceConnection() {
+//            @Override
+//            public void onServiceConnected(ComponentName name, IBinder service) {
+//                GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
+//                locationService = binder.getService();
 //                Location loc = locationService.getLocation();
 //                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
-            }
-
-            @Override
-            public void onServiceDisconnected(ComponentName name) {
-                locationService = null;
-            }
-        };
-        getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
+//            }
+//
+//            @Override
+//            public void onServiceDisconnected(ComponentName name) {
+//                locationService = null;
+//            }
+//        };
+//        getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
 
 //        Timer timer = new Timer();
 //        timer.schedule(new MyTask(), 0, 5000);
     }
 
+//
 //    class MyTask extends TimerTask {
 //        @Override
 //        public void run() {
-//            System.out.println(GPSTracking.lat + " " + GPSTracking.lng);
+//            System.out.println("New location: " + GPSTracking.lat + " " + GPSTracking.lng);
+//            if(GPSTracking.lat != 0.0 && GPSTracking.lng != 0.0) {
+//                try {
+//                    manager.updateClientLocation(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, new NetworkInformationManager.OnClientLocationUpdateListener() {
+//                        @Override
+//                        public void onSuccess(String result) {
+//                            if (result.equals("true")) {
+//                                System.out.println("Location updated " + GPSTracking.lat + " " + GPSTracking.lng);
+//                            } else {
+//                                Log.d(TAG, "Failed to update location");
+//                            }
+//                        }
+//
+//                        @Override
+//                        public void onNetworkFail() {
+//                            Log.d(TAG, "Update location network failure.");
+//                        }
+//
+//                        @Override
+//                        public void onFail() {
+//                            Log.d(TAG, "Update location failure.");
+//                        }
+//                    });
+//                } catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
 //        }
 //    }
 

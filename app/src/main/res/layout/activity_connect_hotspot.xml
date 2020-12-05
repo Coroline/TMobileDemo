@@ -5,47 +5,74 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <View
-        android:id="@+id/headerView"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerLayout"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:background="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/backButtonText"
-        android:layout_width="wrap_content"
-        android:layout_height="21dp"
-        android:layout_marginLeft="15dp"
-        android:layout_marginStart="15dp"
-        android:text="Back"
-        android:textColor="#FFFFFF"
-        android:textAlignment="center"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toBottomOf="@+id/headerView"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:drawableLeft="@drawable/left_arrow_white"
-        android:clickable="true"
-        android:onClick="back"
-        android:focusable="true" />
+        <View
+            android:id="@+id/headerView"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:background="@color/colorPrimary"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"/>
 
-    <TextView
-        android:id="@+id/headerText"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Enter Hotspot Settings"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        android:textColor="#FFFFFF"
-        app:layout_constraintBottom_toBottomOf="@+id/headerView"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/headerView" />
+        <TextView
+            android:id="@+id/backButtonText"
+            android:layout_width="wrap_content"
+            android:layout_height="21dp"
+            android:layout_marginLeft="15dp"
+            android:layout_marginStart="15dp"
+            android:text="Back"
+            android:textColor="#FFFFFF"
+            android:textAlignment="center"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toBottomOf="@+id/headerView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:drawableLeft="@drawable/left_arrow_white"
+            android:clickable="true"
+            android:onClick="back"
+            android:focusable="true" />
+
+        <TextView
+            android:id="@+id/headerText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Connection Status"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#FFFFFF"
+            app:layout_constraintBottom_toBottomOf="@+id/headerView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.5"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/headerView" />
+
+        <Button
+            android:id="@+id/chargeStandard"
+            android:layout_width="wrap_content"
+            android:layout_height="35dp"
+            android:layout_marginEnd="5dp"
+            android:layout_marginRight="5dp"
+            android:padding="3dp"
+            android:background="@drawable/btn_stop_sharing"
+            android:drawableLeft="@drawable/standard"
+            android:text="Charge Rate "
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:visibility="visible"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            android:drawableStart="@drawable/standard" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <ImageView
         android:id="@+id/connection_logo"
@@ -53,7 +80,7 @@
         android:layout_height="wrap_content"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/headerView"
+        app:layout_constraintTop_toBottomOf="@id/headerLayout"
         android:layout_marginTop="20dp"
         android:src="@drawable/internet_connection"/>
 
@@ -89,6 +116,16 @@
             app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
     </LinearLayout>
 
+    <View
+        android:id="@+id/line0"
+        android:layout_height="1px"
+        android:background="#000000"
+        android:layout_width="fill_parent"
+        android:layout_marginTop="20dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/linear"
+        />
+
     <LinearLayout
         android:id="@+id/monitor"
         android:layout_width="wrap_content"
@@ -96,9 +133,9 @@
         android:orientation="horizontal"
         android:weightSum="1"
         android:layout_marginTop="15dp"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginLeft="20dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/linear">
+        app:layout_constraintTop_toBottomOf="@+id/line0">
 
         <TextView
             android:id="@+id/bandwidth_usage_head"
@@ -122,6 +159,39 @@
             app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/credit_linear"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:weightSum="1"
+        android:layout_marginTop="5dp"
+        android:layout_marginLeft="20dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/monitor">
+
+        <TextView
+            android:id="@+id/credit_usage_head"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="0.3"
+            android:text="Credit Usage: "
+            android:textSize="18sp"
+            app:layout_constraintLeft_toLeftOf="parent"
+            />
+
+        <TextView
+            android:id="@+id/current_credit_usage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 MB"
+            android:textSize="18sp"
+            android:layout_weight="0.7"
+            android:layout_marginLeft="5dp"
+            app:layout_constraintStart_toEndOf="@+id/created_wifi"
+            app:layout_constraintTop_toTopOf="@+id/created_wifi"/>
+    </LinearLayout>
+
     <View
         android:id="@+id/line2"
         android:layout_height="1px"
@@ -129,24 +199,8 @@
         android:layout_width="fill_parent"
         android:layout_marginTop="20dp"
         app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/monitor"
+        app:layout_constraintTop_toBottomOf="@id/credit_linear"
         />
-
-<!--    <Button-->
-<!--        android:id="@+id/scan"-->
-<!--        android:layout_width="203dp"-->
-<!--        android:layout_height="wrap_content"-->
-<!--        android:layout_marginTop="30dp"-->
-<!--        android:background="@drawable/round_button"-->
-<!--        android:text="Start Scan"-->
-<!--        android:textAllCaps="false"-->
-<!--        android:textColor="#FFFFFF"-->
-<!--        android:textSize="20sp"-->
-<!--        app:layout_constraintBottom_toTopOf="@+id/wifi_recyclerView"-->
-<!--        app:layout_constraintEnd_toEndOf="parent"-->
-<!--        app:layout_constraintStart_toStartOf="parent"-->
-<!--        app:layout_constraintTop_toBottomOf="@id/line2"-->
-<!--        app:layout_constraintVertical_bias="0.0" />-->
 
     <ImageView
         android:id="@+id/imageView2"

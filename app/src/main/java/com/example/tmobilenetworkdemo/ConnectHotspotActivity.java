@@ -62,8 +62,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private Button scan;
     private WifiAdmin mWifiAdmin;
     private TextView currentConnection;
+    private Button chargeStandard;
     private RecyclerView wifi_recyclerView;
     private TextView backButtonText;
+    private TextView currentCreditUsage;
     private ImageView imageView2;
     List<ScanResult> scanResult = new ArrayList<>();
     List<ScanResult> nearbyClient = new ArrayList<>();
@@ -105,6 +107,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         imageView2.setVisibility(View.VISIBLE);
         currentBandwidthUsage = findViewById(R.id.current_bandwidth_usage);
         bandwidthUsageHead = findViewById(R.id.bandwidth_usage_head);
+        chargeStandard = findViewById(R.id.chargeStandard);
+        currentCreditUsage = findViewById(R.id.current_credit_usage);
         networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
 
         backButtonText.setOnClickListener(new View.OnClickListener() {
@@ -125,12 +129,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             currentConnection.setText("No Internet Connection");
         else
             currentConnection.setText(currentSSID);
-
-//        scanResult = mWifiAdmin.getScanResultList();
-//        System.out.println(scanResult);
-//        initRecyclerView(scanResult);
-//        wifi_recyclerView.setVisibility(View.VISIBLE);
-//        imageView2.setVisibility(View.INVISIBLE);
+        chargeStandard.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showChargeRate();
+            }
+        });
 
         try {
             networkInformationManager.findClients(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
@@ -190,10 +194,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                     if(msg.what == 1){
                         if(Double.parseDouble(wifiTraffic) < 1){
                             Log.i("wifiTraffic", wifiTraffic);
-                            currentBandwidthUsage.setText("0" + wifiTraffic + "MB");
+                            currentBandwidthUsage.setText("0" + wifiTraffic + " MB");
+                            currentCreditUsage.setText("0" + wifiTraffic + " credit");
                         }
                         else{
-                            currentBandwidthUsage.setText(wifiTraffic + "MB");
+                            currentBandwidthUsage.setText(wifiTraffic + " MB");
+                            currentCreditUsage.setText(wifiTraffic + " credit");
                         }
                         try {
                             final double currentWf = Double.parseDouble(wifiTraffic);
@@ -296,10 +302,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         LayoutInflater factory = LayoutInflater.from(this);
         AlertDialog.Builder builder=new AlertDialog.Builder(this);
         final View dialogView = factory.inflate(R.layout.fragment_no_client_dialog, null);
-//        final TextView dialogMessage = (TextView) dialogView.findViewById(R.id.oops);
         builder.setView(dialogView);
         builder.setTitle("Oops!");
-//        dialogMessage.setText("We didn't find ideal clients for you, please go back to last page and edit your parameters.");
         builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -321,7 +325,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         double twifi = ttotalGprs - tgprs;
         totalWifi = rwifi + twifi;
         return totalWifi;
-//totalWifi = rtotalGprs + ttotalGprs;
+        //totalWifi = rtotalGprs + ttotalGprs;
     }
 
 
@@ -423,13 +427,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             if(configuration == null) {
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
-//                    final NetworkInformationManager manager = NetworkInformationManager.getInstance(getApplicationContext());
-
-//                    try {
-                    // Get nearby client list from backend
-//                        manager.findClients(UserInformationManager.token, "school", 1000000, 50000, new NetworkInformationManager.OnFindClientsListener() {
-//                            @Override
-//                            public void onSuccess(String result) {
                     try {
                         networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.get(selectedWifi.SSID), 1000000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
                             @Override
@@ -459,21 +456,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                     } catch (JSONException e){
                         e.printStackTrace();
                     }
-//                            }
-
-//                            @Override
-//                            public void onNetworkFail() {
-//                                showEditPwdDialog(selectedWifi);
-//                            }
-//
-//                            @Override
-//                            public void onFail() {
-//                                showEditPwdDialog(selectedWifi);
-//                            }
-//                        });
-//                    } catch (JSONException e) {
-//                        e.printStackTrace();
-//                    }
                 } else {
                     Log.d(TAG, "no password.");
                     connecting(selectedWifi, null, 1);
@@ -583,6 +565,18 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 //        AnimationDrawable ad= (AnimationDrawable) mIvCenter.getDrawable();
 //        ad.start();
 //    }
+
+
+    public void showChargeRate() {
+        LayoutInflater factory = LayoutInflater.from(this);
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        final View dialogView = factory.inflate(R.layout.dialog_charge_rate, null);
+        builder.setView(dialogView);
+        builder.setTitle("Charge Rate");
+        builder.setPositiveButton("OK", null);
+        AlertDialog dialog=builder.create();
+        dialog.show();
+    }
 
     /**
      * Use Android's stack to take user to the previous screen.
