@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -301,6 +302,7 @@ public class NetworkInformationManager {
         jsonObject.put("location", location);
         jsonObject.put("sharingConfiguration", sharingConfiguration);
 
+        Log.d(TAG, "find client request -> " + jsonObject.toString());
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + findClientsPath, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
@@ -373,7 +375,14 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, error.getMessage());
+                try {
+                    String responseBody = new String(error.networkResponse.data, StandardCharsets.UTF_8);
+                    JSONObject data = new JSONObject(responseBody);
+                    String message = data.optString("msg");
+                    Log.e(TAG, message);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
@@ -467,6 +476,7 @@ public class NetworkInformationManager {
         jsonObject.put("location", location);
         jsonObject.put("token", token);
 
+        Log.d(TAG, "client update location -> " + jsonObject.toString());
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + clientUpdateLocation, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override

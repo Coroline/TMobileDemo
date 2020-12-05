@@ -1,13 +1,18 @@
 package com.example.tmobilenetworkdemo;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -49,6 +54,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
     private boolean mIsFirstReceiveConnected = false;
     private WifiAdmin mWifiAdmin;
     private WifiHotUtil mWifiHotUtil;
+    private ServiceConnection conn;
+    private GPSTracking locationService;
 
     @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
@@ -75,6 +82,25 @@ public class CreateHotspotActivity extends AppCompatActivity {
         });
 
         requestPermissions();
+
+        // Location update service
+        Intent serviceIntent = new Intent(this, GPSTracking.class);
+        conn = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
+                locationService = binder.getService();
+                Location loc = locationService.getLocation();
+                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+            }
+
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                locationService = null;
+            }
+        };
+        getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
+
         createHotspot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -143,8 +169,8 @@ public class CreateHotspotActivity extends AppCompatActivity {
                         }
                     };
                     try {
-                        // todo: location still need discussion
-                        networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), GPSTracking.lat, GPSTracking.lng, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
+                        // todo: change to real location
+                        networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), 0.0, 0.0, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
                     } catch (JSONException e) {
                         e.printStackTrace();
                     } catch (NumberFormatException e) {

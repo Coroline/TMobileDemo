@@ -58,6 +58,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                     @Override
                     public void onSuccess(List<ConnectedUserInfo> list) {
                         Log.d(TAG, "Client find connected user successfully.");
+                        connUserList.clear();
                         connUserList.addAll(list);
                         double totalUsage = 0;
                         for (ConnectedUserInfo e : list) {

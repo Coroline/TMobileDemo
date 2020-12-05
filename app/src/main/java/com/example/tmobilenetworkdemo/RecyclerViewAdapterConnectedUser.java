@@ -49,6 +49,9 @@ public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<Recyc
         double total = mConnectedUser.get(position).getBandwidthUsage();
         DecimalFormat df = new DecimalFormat("#.00");
         String output = df.format(total);
+        if(total < 1.0) {
+            output = "0" + output;
+        }
 
         holder.bandwidthAmount.setText(output + " MB");
         holder.connUserDetail.setOnClickListener(new View.OnClickListener() {

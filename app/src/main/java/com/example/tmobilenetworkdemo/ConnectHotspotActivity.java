@@ -5,10 +5,13 @@ import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
 import android.app.usage.NetworkStatsManager;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.net.TrafficStats;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
@@ -16,6 +19,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
 import android.provider.Settings;
 import android.text.Editable;
@@ -72,6 +76,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private String currentSSID;
     public static boolean mIsConnectingWifi=false;
     public static boolean mIsFirstReceiveConnected=false;
+    private ServiceConnection conn;
+    private GPSTracking locationService;
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
     private long connectionStartTime = 0;
@@ -79,7 +85,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private long endTime = System.currentTimeMillis();
 
     double totalWifi;
-    public static String wifiTraffic ;
+    public static String wifiTraffic;
     public static double wf = 0;
     public static double lastWf = 0;
     private TextView currentBandwidthUsage;
@@ -136,43 +142,61 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             }
         });
 
-        try {
-            networkInformationManager.findClients(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
-                @Override
-                public void onSuccess(HashMap<String, String> result) {
-                    System.out.println("find client result: " + result);
-                    scanResult = mWifiAdmin.getScanResultList();
-                    for(Map.Entry<String, String> entry: result.entrySet()) {    // Get intersection of scanned result and backend result
-                        for(int i = 0; i < scanResult.size(); i++) {
-                            if(entry.getKey().equals(scanResult.get(i).SSID))
-                                nearbyClient.add(scanResult.get(i));
+
+        // Location update service
+        Intent serviceIntent = new Intent(this, GPSTracking.class);
+        conn = new ServiceConnection() {
+            @Override
+            public void onServiceConnected(ComponentName name, IBinder service) {
+                GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
+                locationService = binder.getService();
+                Location loc = locationService.getLocation();
+//                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
+                try {
+                    //todo: change to real location
+                    networkInformationManager.findClients(UserInformationManager.token, 0.0, 0.0, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
+                        @Override
+                        public void onSuccess(HashMap<String, String> result) {
+                            System.out.println("find client result: " + result);
+                            scanResult = mWifiAdmin.getScanResultList();
+                            for(Map.Entry<String, String> entry: result.entrySet()) {    // Get intersection of scanned result and backend result
+                                for(int i = 0; i < scanResult.size(); i++) {
+                                    if(entry.getKey().equals(scanResult.get(i).SSID))
+                                        nearbyClient.add(scanResult.get(i));
+                                }
+                            }
+                            System.out.println(scanResult);    // Original Wifi List
+                            System.out.println(nearbyClient);  // List of hotspot that is created via this app and meet bandwidth and interval parameter settings
+                            if(nearbyClient.size() == 0) {     // No corresponding clients to meet parameter requirements, pop up a dialog
+                                showNoClientDialog();
+                            } else {
+                                initRecyclerView(nearbyClient);
+                                wifi_recyclerView.setVisibility(View.VISIBLE);
+                                imageView2.setVisibility(View.INVISIBLE);
+                            }
                         }
-                    }
-                    System.out.println(scanResult);    // Original Wifi List
-                    System.out.println(nearbyClient);  // List of hotspot that is created via this app and meet bandwidth and interval parameter settings
-                    if(nearbyClient.size() == 0) {     // No corresponding clients to meet parameter requirements, pop up a dialog
-                        showNoClientDialog();
-                    } else {
-                        initRecyclerView(nearbyClient);
-                        wifi_recyclerView.setVisibility(View.VISIBLE);
-                        imageView2.setVisibility(View.INVISIBLE);
-                    }
-                }
 
-                @Override
-                public void onNetworkFail() {
-                    System.out.println("find client failed - network.");
-                }
+                        @Override
+                        public void onNetworkFail() {
+                            System.out.println("find client failed - network.");
+                        }
 
-                @Override
-                public void onFail() {
-                    System.out.println("find client failed.");
+                        @Override
+                        public void onFail() {
+                            System.out.println("find client failed.");
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
-            });
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+            }
 
+            @Override
+            public void onServiceDisconnected(ComponentName name) {
+                locationService = null;
+            }
+        };
+        getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
         // result info:
         // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
 
@@ -428,7 +452,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 Log.d(TAG, "oClick: wifi has not been configured.");
                 if(isLocked) {
                     try {
-                        networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.get(selectedWifi.SSID), 1000000, 5000, new NetworkInformationManager.OnRequestConnectionListener() {
+                        networkInformationManager.requestConnection(UserInformationManager.token, NetworkInformationManager.ssidIdMap.get(selectedWifi.SSID), connectionAmount, connectDuration, new NetworkInformationManager.OnRequestConnectionListener() {
                             @Override
                             public void onSuccess(String password, int connectionId) {
                                 Log.d(TAG, "password is: " + password);
