@@ -217,7 +217,6 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             public void onClick(View view) {
                 try {
                     disconnectUser(selectedConnUser);
-                    finish();
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -266,7 +265,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             public void onSuccess(Boolean status) {
                 // TODO: Disconnect User
                 if(status) {
-
+                    Log.d(TAG, "Client disconnection is successful.");
                 } else {
                     Log.d(TAG, "Client disconnect this user failed");
                 }
