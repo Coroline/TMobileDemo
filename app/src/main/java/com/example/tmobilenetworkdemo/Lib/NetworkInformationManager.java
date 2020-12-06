@@ -21,6 +21,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -375,13 +376,25 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                if (error == null || error.networkResponse == null) {
+                    return;
+                }
+
+                String body;
+                //get status code here
+                final String statusCode = String.valueOf(error.networkResponse.statusCode);
+                //get response body and parse with appropriate encoding
                 try {
-                    String responseBody = new String(error.networkResponse.data, StandardCharsets.UTF_8);
-                    JSONObject data = new JSONObject(responseBody);
-                    String message = data.optString("msg");
-                    Log.e(TAG, message);
-                } catch (JSONException e) {
+                    body = new String(error.networkResponse.data,"UTF-8");
+                    Log.d(TAG, "status code -> " + statusCode);
+                    Log.d(TAG, "body -> " + body);
+                } catch (UnsupportedEncodingException e) {
                     e.printStackTrace();
+                }
+                if (statusCode.equals("400")){
+                    // should disconnect
+                    l.onSuccess("true");
+                    return;
                 }
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
@@ -666,6 +679,8 @@ public class NetworkInformationManager {
         jsonObject.put("token", token);
         jsonObject.put("connectionId", connectionID);
 
+
+        Log.d(TAG, "disconnect request -> " + jsonObject.toString());
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + disconnectUserPath, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override

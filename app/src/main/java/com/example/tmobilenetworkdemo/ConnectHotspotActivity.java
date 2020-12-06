@@ -98,6 +98,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private NetworkInformationManager networkInformationManager;
     private int connectDuration;    // Parameters for searching clients
     private int connectionAmount;
+    private Thread timerThread = null;
+    private Thread updateThread = null;
+    private String mSSID = "";
+    private int networkID = -1;
 
     private static final String TAG = "ConnectHotspotActivity";
 
@@ -230,13 +234,26 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                             networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, currentWf-lastWf, new NetworkInformationManager.OnBandwidthUpdateListener() {
                                 @Override
                                 public void onSuccess(String result) {
-                                    lastWf = currentWf;
                                     System.out.println(result);
+                                    if (result.equals("false")) {
+                                        lastWf = currentWf;
+                                    } else {
+                                        //should disconnect
+                                        Log.d(TAG, "should disconnect!");
+
+                                        // forget network
+                                        wifiManager.removeNetwork(networkID);
+                                        wifiManager.saveConfiguration();
+
+                                        updateThread.interrupt();
+                                        timerThread.interrupt();
+                                        onBackPressed();
+                                    }
                                 }
 
                                 @Override
                                 public void onNetworkFail() {
-
+                                    Toast.makeText(getApplicationContext(), "Disconnect from WiFi", Toast.LENGTH_LONG).show();
                                 }
 
                                 @Override
@@ -263,14 +280,15 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 };
             }
 
-            new Thread(new Runnable() {
+            timerThread = new Thread(new Runnable() {
                 public void run(){
                     for(int i = 0; ; i++){
                         try {
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
 // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            System.out.println("need close thread!");
+                            break;
                         }
                         seconds += 5;
                         Message msg1 = new Message();
@@ -286,9 +304,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         }
                     }
                 }
-            }).start();
+            });
+            timerThread.start();
 
-            new Thread(new Runnable() {
+            updateThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     while(true){
@@ -299,7 +318,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                             Thread.sleep(5000);
                         } catch (InterruptedException e) {
 // TODO Auto-generated catch block
-                            e.printStackTrace();
+                            System.out.println("need close thread!");
+                            break;
                         }
                         double frontTime = System.currentTimeMillis();
 //  getWifiTraffic(frontTime);
@@ -308,7 +328,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         if(errorTraffic < 512){
                             errorTraffic = 1;
                         }
-                        wf += errorTraffic/1111500;
+//                        wf += errorTraffic/1111500;
+                        wf += errorTraffic/1050000;
 //                        wf += errorTraffic;
                         wifiTraffic = df.format(wf);
 //  Log.i("使用的流量", wifiTraffic + "");
@@ -317,7 +338,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                         handler.sendMessage(message);
                     }
                 }
-            }).start();
+            });
+            updateThread.start();
         }
     }
 
@@ -459,11 +481,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                                 UserInformationManager.connectionId = connectionId;
 
                                 if (selectedWifi.capabilities.contains("WEP")) {
-                                    connecting(selectedWifi, password, 2);
+                                    networkID = connecting(selectedWifi, password, 2);
                                 } else {
-                                    connecting(selectedWifi, password, 3);
+                                    networkID = connecting(selectedWifi, password, 3);
                                 }
 
+                                mSSID = selectedWifi.SSID;
                                 newHotspotConnectionClicked();
                             }
 
