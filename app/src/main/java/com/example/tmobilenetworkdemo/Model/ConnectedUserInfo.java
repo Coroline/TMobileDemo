@@ -1,10 +1,10 @@
 package com.example.tmobilenetworkdemo.Model;
 
 public class ConnectedUserInfo {
-    public String username;
-    public int connectionId;
-    public double bandwidthUsage;
-    public int duration;
+    private String username;
+    private int connectionId;
+    private double bandwidthUsage;
+    private int duration;
 
     public ConnectedUserInfo() {}
     public ConnectedUserInfo(String username, int connectionId, double bandwidthUsage, int duration) {
@@ -17,4 +17,5 @@ public class ConnectedUserInfo {
     public String getUsername() { return username; }
     public double getBandwidthUsage() { return bandwidthUsage; }
     public int getDuration() { return duration; }
+    public int getConnectionId() { return connectionId; }
 }

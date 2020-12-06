@@ -63,6 +63,8 @@ import java.util.TimerTask;
 
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
 
+    public static boolean active;
+
     private Button scan;
     private WifiAdmin mWifiAdmin;
     private TextView currentConnection;
@@ -120,6 +122,8 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         chargeStandard = findViewById(R.id.chargeStandard);
         currentCreditUsage = findViewById(R.id.current_credit_usage);
         networkInformationManager = NetworkInformationManager.getInstance(getApplicationContext());
+
+        active = true;
 
         backButtonText.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -241,13 +245,16 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                                         //should disconnect
                                         Log.d(TAG, "should disconnect!");
 
-                                        // forget network
-                                        wifiManager.removeNetwork(networkID);
-                                        wifiManager.saveConfiguration();
+                                        if (active) {
+                                            // forget network
+                                            active = false;
+                                            wifiManager.removeNetwork(networkID);
+                                            wifiManager.saveConfiguration();
 
-                                        updateThread.interrupt();
-                                        timerThread.interrupt();
-                                        onBackPressed();
+                                            updateThread.interrupt();
+                                            timerThread.interrupt();
+                                            onBackPressed();
+                                        }
                                     }
                                 }
 

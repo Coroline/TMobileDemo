@@ -201,7 +201,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     }
 
     @Override
-    public void onConnUserSelected(ConnectedUserInfo selectedConnUser) {
+    public void onConnUserSelected(final ConnectedUserInfo selectedConnUser) {
         LayoutInflater factory = LayoutInflater.from(this);
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         final View dialogView = factory.inflate(R.layout.dialog_connected_user_detail, null);
@@ -216,7 +216,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             @Override
             public void onClick(View view) {
                 try {
-                    disconnectUser();
+                    disconnectUser(selectedConnUser);
                     finish();
                 } catch (JSONException e) {
                     e.printStackTrace();
@@ -260,8 +260,8 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     }
 
 
-    public void disconnectUser() throws JSONException {
-        manager.disconnectUser(UserInformationManager.token, UserInformationManager.connectionId, new NetworkInformationManager.OnDisconnectUserListener() {
+    public void disconnectUser(ConnectedUserInfo connectedUserInfo) throws JSONException {
+        manager.disconnectUser(UserInformationManager.token, connectedUserInfo.getConnectionId(), new NetworkInformationManager.OnDisconnectUserListener() {
             @Override
             public void onSuccess(Boolean status) {
                 // TODO: Disconnect User

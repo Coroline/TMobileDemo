@@ -180,7 +180,7 @@ public class NetworkInformationManager {
         jsonObject.put("clientUsername", clientUsername);
         jsonObject.put("sharingConfiguration", sharingConfiguration);
 
-        Log.d(TAG, jsonObject.toString());
+        Log.d(TAG, "request connection -> " + jsonObject.toString());
 
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + requestConnectionPath, jsonObject,
                 new Response.Listener<JSONObject>() {
