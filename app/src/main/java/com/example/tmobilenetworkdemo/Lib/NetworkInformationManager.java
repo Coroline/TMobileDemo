@@ -39,7 +39,7 @@ public class NetworkInformationManager {
     private static final String registerUserPath = "register-app-user";
     private static final String startSharingPath = "start-sharing";
     private static final String stopSharingPath = "stop-sharing";
-    private static final String disconnectUserPath = "disconnect_user";
+    private static final String disconnectUserPath = "disconnect-user";
     private static final String findClientsPath = "find-clients";
     private static final String requestConnectionPath = "request-connection-to-client";
     private static final String updateBandwidthUsage = "update-bandwidth-usage";
