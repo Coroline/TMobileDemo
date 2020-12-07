@@ -48,6 +48,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     private Timer queryUsageTimer;
     private GPSTracking locationService;
     private ServiceConnection conn;
+    private Timer updateLocationTimer;
     private static final String TAG = "CreatedHotspotInformationActivity";
 
     private class QueryTimerTask extends TimerTask {
@@ -142,10 +143,8 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             }
         };
         getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
-        Timer timer = new Timer();
-        timer.schedule(new MyTask(), 0, 5000);
-
-
+        updateLocationTimer = new Timer();
+        updateLocationTimer.schedule(new MyTask(), 0, 5000);
         startQueryUsage(queryDelay, queryInterval);
     }
 
@@ -241,6 +240,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                     totalCreditData.setText("+0 credit");
                     initRecyclerView(connUserList);
                     Log.d(TAG, "You have successfully stopped sharing bandwidth.");
+                    queryUsageTimer.cancel();
                 } else {
                     Log.d(TAG, "Client stops sharing failed");
                 }

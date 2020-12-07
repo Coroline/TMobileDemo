@@ -34,7 +34,7 @@ public class NetworkInformationManager {
     private static NetworkInformationManager sInstance;
     private static Context mContext;
     private static RequestQueue requestQueue;
-    private static final String serverUrl = "http://34.216.147.160:80";
+    private static final String serverUrl = "http://ec2-3-236-150-225.compute-1.amazonaws.com:80";
     private static final String loginPath = "login-app-user";
     private static final String registerUserPath = "register-app-user";
     private static final String startSharingPath = "start-sharing";
@@ -484,8 +484,10 @@ public class NetworkInformationManager {
     public void updateClientLocation(final String token, final double lat, final double lng, final OnClientLocationUpdateListener l) throws JSONException {
         JSONObject location = new JSONObject();
         JSONObject jsonObject = new JSONObject();
-        location.put("latitude", String.valueOf(lat));
-        location.put("longitude", String.valueOf(lng));
+//        location.put("latitude", String.valueOf(lat));
+//        location.put("longitude", String.valueOf(lng));
+        location.put("latitude", "0");
+        location.put("longitude", "0");
         jsonObject.put("location", location);
         jsonObject.put("token", token);
 
@@ -500,6 +502,20 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                if (error == null || error.networkResponse == null) {
+                    return;
+                }
+                String body;
+                //get status code here
+                final String statusCode = String.valueOf(error.networkResponse.statusCode);
+                //get response body and parse with appropriate encoding
+                try {
+                    body = new String(error.networkResponse.data,"UTF-8");
+                    Log.d(TAG, "status code -> " + statusCode);
+                    Log.d(TAG, "body -> " + body);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
