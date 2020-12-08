@@ -573,7 +573,7 @@ public class NetworkInformationManager {
                         for(int i = 0; i < len; i++) {
                             try {
                                 JSONObject item = receiptArray.getJSONObject(i);
-                                transactionList.add(new TransactionInfo(item.getString("sessionId"), item.getString("userName"), item.getString("clientName"), Double.parseDouble(item.getString("totalBandwidth")), Double.parseDouble(item.getString("totalCreditsTransferred")), Integer.parseInt(item.getString("totalDuration")), item.getString("timestamp")));
+                                transactionList.add(new TransactionInfo(item.getString("sessionId"), item.getString("userName"), item.getString("clientName"), Double.parseDouble(item.getString("totalBandwidth")), Double.parseDouble(item.getString("totalCreditsTransferred")), Integer.parseInt(item.getString("totalDuration"))/1000, item.getString("timestamp")));
                             } catch (JSONException e) {
                                 e.printStackTrace();
                             }
@@ -887,6 +887,20 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                if (error == null || error.networkResponse == null) {
+                    return;
+                }
+                String body;
+                //get status code here
+                final String statusCode = String.valueOf(error.networkResponse.statusCode);
+                //get response body and parse with appropriate encoding
+                try {
+                    body = new String(error.networkResponse.data,"UTF-8");
+                    Log.d(TAG, "status code -> " + statusCode);
+                    Log.d(TAG, "body -> " + body);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
