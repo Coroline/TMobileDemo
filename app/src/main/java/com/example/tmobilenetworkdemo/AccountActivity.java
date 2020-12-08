@@ -48,61 +48,59 @@ public class AccountActivity extends AppCompatActivity implements RecyclerViewAd
                 startActivity(i);
             }
         });
+        try {
+            networkInformationManager.getCredit(UserInformationManager.token, new NetworkInformationManager.OnCreditQueryListener() {
+                @Override
+                public void onSuccess(double credit) {
+                    curCredit.setText(String.format("%.2f", credit));
+                }
 
-//        try {
-//            networkInformationManager.getCredit(UserInformationManager.token, new NetworkInformationManager.OnCreditQueryListener() {
-//
-//                @Override
-//                public void onSuccess(double credit) {
-//                    curCredit.setText(String.valueOf(credit));
-//                }
-//
-//                @Override
-//                public void onNetworkFail() {
-//                    System.out.println("Get credit query network fail.");
-//                }
-//
-//                @Override
-//                public void onFail() {
-//                    System.out.println("Get credit query fail.");
-//                }
-//            });
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-//
-//        try {
-//            networkInformationManager.getAllReceipts(UserInformationManager.token, new NetworkInformationManager.OnTransactionQueryListener() {
-//                @Override
-//                public void onSuccess(List<TransactionInfo> list) {
-//                    transactionList.addAll(list);
-//                    initRecyclerView(transactionList);
-//                }
-//
-//                @Override
-//                public void onNetworkFail() {
-//                    System.out.println("Get all receipt query network fail.");
-//                }
-//
-//                @Override
-//                public void onFail() {
-//                    System.out.println("Get all receipt query fail.");
-//                }
-//            });
-//        } catch (JSONException e) {
-//            e.printStackTrace();
-//        }
-        transactionList.add(new TransactionInfo("1", "user", "client", 12.2, 120.0, 1000, "Dec 3, 2020"));
-        transactionList.add(new TransactionInfo("2", "user", "client", 12.3, 130.0, 1045, "Dec 7, 2020"));
-        transactionList.add(new TransactionInfo("3", "client", "user", 12.4, 140.0, 1023, "Dec 18, 2020"));
-        initRecyclerView(transactionList);
+                @Override
+                public void onNetworkFail() {
+                    System.out.println("Get credit query network fail.");
+                }
+
+                @Override
+                public void onFail() {
+                    System.out.println("Get credit query fail.");
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            networkInformationManager.getAllReceipts(UserInformationManager.token, new NetworkInformationManager.OnTransactionQueryListener() {
+                @Override
+                public void onSuccess(List<TransactionInfo> list) {
+                    transactionList.addAll(list);
+                    initRecyclerView(transactionList);
+                }
+
+                @Override
+                public void onNetworkFail() {
+                    System.out.println("Get all receipt query network fail.");
+                }
+
+                @Override
+                public void onFail() {
+                    System.out.println("Get all receipt query fail.");
+                }
+            });
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+//        transactionList.add(new TransactionInfo("1", "user", "client", 12.2, 120.0, 1000, "Dec 3, 2020"));
+//        transactionList.add(new TransactionInfo("2", "user", "client", 12.3, 130.0, 1045, "Dec 7, 2020"));
+//        transactionList.add(new TransactionInfo("3", "client", "user", 12.4, 140.0, 1023, "Dec 18, 2020"));
+//        initRecyclerView(transactionList);
     }
 
 
     // Recycler View
     private void initRecyclerView(List<TransactionInfo> transactionHistory) {
         RecyclerView recyclerView = findViewById(R.id.transaction_history);
-        System.out.println(transactionHistory.get(1).getTimeStamp());
+//        System.out.println(transactionHistory.get(1).getTimeStamp());
         RecyclerViewAdapterTransaction adapter = new RecyclerViewAdapterTransaction(transactionHistory, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));

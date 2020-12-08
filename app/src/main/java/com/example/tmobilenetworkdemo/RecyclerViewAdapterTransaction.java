@@ -52,10 +52,10 @@ public class RecyclerViewAdapterTransaction extends RecyclerView.Adapter<Recycle
         double credit = mTransactionItem.get(position).getTotalCreditTransferred();
         if(UserInformationManager.username.equals(user)) {    // This transaction is about asking for bandwidth
             holder.interactionEntity.setText(client);
-            holder.creditChange.setText("-" + credit + " credit");
+            holder.creditChange.setText("-" + String.format("%.2f", credit) + " credit");
         } else if (UserInformationManager.username.equals(client)) {    // This transaction is about sharing bandwidth
             holder.interactionEntity.setText(user);
-            holder.creditChange.setText("+" + credit + " credit");
+            holder.creditChange.setText("+" + String.format("%.2f", credit) + " credit");
         }
 
         holder.transactionDetail.setOnClickListener(new View.OnClickListener() {

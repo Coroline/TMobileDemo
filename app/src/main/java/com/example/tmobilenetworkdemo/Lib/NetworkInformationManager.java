@@ -47,6 +47,7 @@ public class NetworkInformationManager {
     private static final String clientUpdateLocation = "client-update-location";
     private static final String getAllReceipts = "get-all-receipts";
     private static final String queryCredit = "query-credit";
+    private static final String queryConnectionBandwidthUsage = "query-connection-bandwidth-usage";
     public static HashMap<String, String> ssidIdMap = new HashMap<>();
 
     private NetworkInformationManager(Context context) {
@@ -108,7 +109,7 @@ public class NetworkInformationManager {
     }
 
     public interface OnBandwidthQueryListener {
-        void onSuccess(List<ConnectedUserInfo> list);
+        void onSuccess(List<ConnectedUserInfo> list, double clientCredit);
 
         void onNetworkFail();
 
@@ -149,6 +150,14 @@ public class NetworkInformationManager {
 
     public interface OnDisconnectUserListener {
         void onSuccess(Boolean status);
+
+        void onNetworkFail();
+
+        void onFail();
+    }
+
+    public interface OnConnectionBandwidthUsageListener{
+        void onSuccess(double bandwidthUsed, int duration, double creditsTransferred);
 
         void onNetworkFail();
 
@@ -438,6 +447,7 @@ public class NetworkInformationManager {
                         JSONArray connectionIdsArray = response.optJSONArray("connectionIds");
                         JSONArray bandwidthUsageArray = response.optJSONArray("bandwidthUsageList");
                         JSONArray durationArray = response.optJSONArray("durationList");
+                        Double clientCredit = response.optDouble("clientCredit");
                         int len = usernameArray.length();
                         List<ConnectedUserInfo> connUserList = new ArrayList<>();
                         for(int i = 0; i < len; i++) {
@@ -447,7 +457,7 @@ public class NetworkInformationManager {
                                 e.printStackTrace();
                             }
                         }
-                        l.onSuccess(connUserList);
+                        l.onSuccess(connUserList, clientCredit);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -551,12 +561,13 @@ public class NetworkInformationManager {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("token", token);
 
+        Log.d(TAG, "get all receipts -> " + jsonObject.toString());
         JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + getAllReceipts, jsonObject,
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "transaction query response -> " + response.toString());
-                        JSONArray receiptArray = response.optJSONArray("usernameList");
+                        JSONArray receiptArray = response.optJSONArray("receipts");
                         int len = receiptArray.length();
                         List<TransactionInfo> transactionList = new ArrayList<>();
                         for(int i = 0; i < len; i++) {
@@ -572,6 +583,20 @@ public class NetworkInformationManager {
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
+                if (error == null || error.networkResponse == null) {
+                    return;
+                }
+                String body;
+                //get status code here
+                final String statusCode = String.valueOf(error.networkResponse.statusCode);
+                //get response body and parse with appropriate encoding
+                try {
+                    body = new String(error.networkResponse.data,"UTF-8");
+                    Log.d(TAG, "status code -> " + statusCode);
+                    Log.d(TAG, "body -> " + body);
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
                 if (error instanceof NetworkError) {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
@@ -609,7 +634,7 @@ public class NetworkInformationManager {
                     public void onResponse(JSONObject response) {
                         Log.d(TAG, "credit query response -> " + response.toString());
                         try {
-                            l.onSuccess(Double.parseDouble(response.getString("credit")));
+                            l.onSuccess(response.getDouble("credit"));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
@@ -827,6 +852,45 @@ public class NetworkInformationManager {
                     l.onNetworkFail();
                 } else if (error instanceof AuthFailureError) {
                     l.onAuthFail();
+                } else {
+                    Log.e(TAG, error.getMessage(), error);
+                }
+            }
+        }) {
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put("Accept", "application/json");
+                headers.put("Content-Type", "application/json; charset=UTF-8");
+                return headers;
+            }
+        };
+        requestQueue.add(jsonRequest);
+    }
+
+    public void queryConnectionBandwidthUsage(final String token, final int connectionId, final OnConnectionBandwidthUsageListener l) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("token", token);
+        jsonObject.put("connectionId", connectionId);
+
+        JsonRequest<JSONObject> jsonRequest = new JsonObjectRequest(Request.Method.POST, serverUrl + "/" + queryConnectionBandwidthUsage, jsonObject,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.d(TAG, "query connection bandwidth usage response -> " + response.toString());
+                        try {
+                            l.onSuccess(response.getDouble("bandwidthUsed"), response.getInt("duration"), response.getDouble("creditsTransferred"));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                if (error instanceof NetworkError) {
+                    l.onNetworkFail();
+                } else if (error instanceof AuthFailureError) {
+                    l.onFail();
                 } else {
                     Log.e(TAG, error.getMessage(), error);
                 }

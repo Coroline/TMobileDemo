@@ -57,7 +57,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             try {
                 manager.queryBandwidthUsage(UserInformationManager.token, new NetworkInformationManager.OnBandwidthQueryListener() {
                     @Override
-                    public void onSuccess(List<ConnectedUserInfo> list) {
+                    public void onSuccess(List<ConnectedUserInfo> list, double clientCredit) {
                         Log.d(TAG, "Client find connected user successfully.");
                         connUserList.clear();
                         connUserList.addAll(list);
@@ -66,12 +66,17 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                             totalUsage += e.getBandwidthUsage();
                         }
                         DecimalFormat df = new DecimalFormat("#.00");
-                        String output = df.format(totalUsage);
+                        String usageString = df.format(totalUsage);
                         if(totalUsage < 1.0) {
-                            output = "0" + output;
+                            usageString = "0" + usageString;
                         }
-                        totalSharingData.setText(output + " MB");
-                        totalCreditData.setText("+" + output + " credit");
+                        String creditString = df.format(clientCredit);
+                        if(clientCredit < 1.0) {
+                            creditString = "0" + creditString;
+                        }
+
+                        totalSharingData.setText(usageString + " MB");
+                        totalCreditData.setText("+" + creditString + " credit");
                         initRecyclerView(connUserList);
                     }
 
@@ -241,6 +246,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
                     initRecyclerView(connUserList);
                     Log.d(TAG, "You have successfully stopped sharing bandwidth.");
                     queryUsageTimer.cancel();
+                    updateLocationTimer.cancel();
                 } else {
                     Log.d(TAG, "Client stops sharing failed");
                 }

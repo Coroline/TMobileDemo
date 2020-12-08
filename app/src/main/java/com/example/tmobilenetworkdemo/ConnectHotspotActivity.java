@@ -43,6 +43,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
+import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
 import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
@@ -104,8 +105,37 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private Thread updateThread = null;
     private String mSSID = "";
     private int networkID = -1;
+    private Timer queryBandwidthTimer = null;
 
     private static final String TAG = "ConnectHotspotActivity";
+
+    private class QueryTimerTask extends TimerTask {
+        @Override
+        public void run() {
+            try {
+                networkInformationManager.queryConnectionBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, new NetworkInformationManager.OnConnectionBandwidthUsageListener() {
+                    @Override
+                    public void onSuccess(double bandwidthUsed, int duration, double creditsTransferred) {
+                        Log.i("bandwidthused", String.format("%.2f", bandwidthUsed));
+                        currentBandwidthUsage.setText(String.format("%.2f", bandwidthUsed) + " MB");
+                        currentCreditUsage.setText(String.format("%.2f", creditsTransferred) + " credit");
+                    }
+
+                    @Override
+                    public void onNetworkFail() {
+
+                    }
+
+                    @Override
+                    public void onFail() {
+
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -128,6 +158,13 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         backButtonText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+//                // forget network
+//                active = false;
+//                wifiManager.removeNetwork(networkID);
+//                wifiManager.saveConfiguration();
+//
+//                updateThread.interrupt();
+//                timerThread.interrupt();
                 back(view);
             }
         });
@@ -224,15 +261,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 public void handleMessage(Message msg){
                     super.handleMessage(msg);
                     if(msg.what == 1){
-                        if(Double.parseDouble(wifiTraffic) < 1){
-                            Log.i("wifiTraffic", wifiTraffic);
-                            currentBandwidthUsage.setText("0" + wifiTraffic + " MB");
-                            currentCreditUsage.setText("0" + wifiTraffic + " credit");
-                        }
-                        else{
-                            currentBandwidthUsage.setText(wifiTraffic + " MB");
-                            currentCreditUsage.setText(wifiTraffic + " credit");
-                        }
                         try {
                             final double currentWf = Double.parseDouble(wifiTraffic);
                             networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, currentWf-lastWf, new NetworkInformationManager.OnBandwidthUpdateListener() {
@@ -248,9 +276,9 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                                         if (active) {
                                             // forget network
                                             active = false;
+                                            queryBandwidthTimer.cancel();
                                             wifiManager.removeNetwork(networkID);
                                             wifiManager.saveConfiguration();
-
                                             updateThread.interrupt();
                                             timerThread.interrupt();
                                             onBackPressed();
@@ -347,6 +375,9 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 }
             });
             updateThread.start();
+
+            queryBandwidthTimer = new Timer();
+            queryBandwidthTimer.schedule(new QueryTimerTask(), 0, 5000);
         }
     }
 
@@ -380,8 +411,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         return totalWifi;
         //totalWifi = rtotalGprs + ttotalGprs;
     }
-
-
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     @Override
