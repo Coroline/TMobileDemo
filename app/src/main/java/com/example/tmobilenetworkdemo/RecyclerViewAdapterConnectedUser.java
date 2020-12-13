@@ -18,6 +18,9 @@ import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
 import java.text.DecimalFormat;
 import java.util.List;
 
+/**
+ * RecyclerViewAdapter for connected user list
+ */
 public class RecyclerViewAdapterConnectedUser extends RecyclerView.Adapter<RecyclerViewAdapterConnectedUser.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapterConnectedUser";
 

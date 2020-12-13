@@ -4,7 +4,6 @@ import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.AlertDialog;
 import android.app.AppOpsManager;
-import android.app.usage.NetworkStatsManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -43,18 +42,12 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.tmobilenetworkdemo.Lib.GPSTracking;
 import com.example.tmobilenetworkdemo.Lib.NetworkInformationManager;
 import com.example.tmobilenetworkdemo.Lib.UserInformationManager;
-import com.example.tmobilenetworkdemo.Model.ConnectedUserInfo;
-import com.example.tmobilenetworkdemo.Wifi.NetworkStatsHelper;
-import com.example.tmobilenetworkdemo.Wifi.PackageManagerHelper;
 import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import org.json.JSONException;
-import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,11 +55,15 @@ import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+/**
+ * Activity for a user, show information about current connected hotspot,
+ * nearby qualified clients and total bandwidth and credit usage
+ */
 public class ConnectHotspotActivity extends AppCompatActivity implements RecyclerViewAdapterNearbyWifi.onWifiSelectedListener {
 
     public static boolean active;
 
-    private Button scan;
     private WifiAdmin mWifiAdmin;
     private TextView currentConnection;
     private Button chargeStandard;
@@ -84,8 +81,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
 
     private static final int READ_PHONE_STATE_REQUEST = 37;
     private long connectionStartTime = 0;
-    private long startTime = System.currentTimeMillis();
-    private long endTime = System.currentTimeMillis();
 
     double totalWifi;
     public static String wifiTraffic;
@@ -103,12 +98,14 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     private int connectionAmount;
     private Thread timerThread = null;
     private Thread updateThread = null;
-    private String mSSID = "";
     private int networkID = -1;
+    private String mSSID = "";
     private Timer queryBandwidthTimer = null;
-
     private static final String TAG = "ConnectHotspotActivity";
 
+    /**
+     * Timer to update bandwidth usage
+     */
     private class QueryTimerTask extends TimerTask {
         @Override
         public void run() {
@@ -116,7 +113,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 networkInformationManager.queryConnectionBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, new NetworkInformationManager.OnConnectionBandwidthUsageListener() {
                     @Override
                     public void onSuccess(double bandwidthUsed, int duration, double creditsTransferred) {
-                        Log.i("bandwidthused", String.format("%.2f", bandwidthUsed));
+                        Log.i("bandwidthUsed", String.format("%.2f", bandwidthUsed));
                         currentBandwidthUsage.setText(String.format("%.2f", bandwidthUsed) + " MB");
                         currentCreditUsage.setText(String.format("%.2f", creditsTransferred) + " credit");
                     }
@@ -158,13 +155,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         backButtonText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                // forget network
-//                active = false;
-//                wifiManager.removeNetwork(networkID);
-//                wifiManager.saveConfiguration();
-//
-//                updateThread.interrupt();
-//                timerThread.interrupt();
                 back(view);
             }
         });
@@ -187,7 +177,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             }
         });
 
-
         // Location update service
         Intent serviceIntent = new Intent(this, GPSTracking.class);
         conn = new ServiceConnection() {
@@ -196,9 +185,7 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
                 GPSTracking.MyBinder binder = (GPSTracking.MyBinder) service;
                 locationService = binder.getService();
                 Location loc = locationService.getLocation();
-//                System.out.println(loc.getLatitude() + " | " + loc.getLongitude());
                 try {
-                    //todo: change to real location
                     networkInformationManager.findClients(UserInformationManager.token, 0.0, 0.0, connectionAmount, connectDuration, new NetworkInformationManager.OnFindClientsListener() {
                         @Override
                         public void onSuccess(HashMap<String, String> result) {
@@ -242,12 +229,12 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             }
         };
         getApplicationContext().bindService(serviceIntent, conn, Context.BIND_AUTO_CREATE);
-        // result info:
-        // SSID: DoNotConnectMe_5GEXT, BSSID: cc:40:d0:f0:af:38, capabilities: [WPA-PSK-CCMP+TKIP][WPA2-PSK-CCMP+TKIP][WPS][ESS], level: -60, frequency: 5765, timestamp: 524626056217, distance: ?(cm), distanceSd: ?(cm), passpoint: no, ChannelBandwidth: 2, centerFreq0: 5775, centerFreq1: 0, 80211mcResponder: is not supported,
-
     }
 
 
+    /**
+     * Events after a user click a new hotspot: update bandwidth usage and credit usage
+     */
     private void newHotspotConnectionClicked() {
         seconds = 0;
         wifiManager = (WifiManager)getApplicationContext().getSystemService(Context.WIFI_SERVICE);
@@ -259,85 +246,84 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         if(wifiStr == 3){
             final Handler handler = new Handler(){
                 public void handleMessage(Message msg){
-                    super.handleMessage(msg);
-                    if(msg.what == 1){
-                        try {
-                            final double currentWf = Double.parseDouble(wifiTraffic);
-                            networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, currentWf-lastWf, new NetworkInformationManager.OnBandwidthUpdateListener() {
-                                @Override
-                                public void onSuccess(String result) {
-                                    System.out.println(result);
-                                    if (result.equals("false")) {
-                                        lastWf = currentWf;
-                                    } else {
-                                        //should disconnect
-                                        Log.d(TAG, "should disconnect!");
+                super.handleMessage(msg);
+                if(msg.what == 1){
+                    try {
+                        final double currentWf = Double.parseDouble(wifiTraffic);
+                        networkInformationManager.updateBandwidthUsage(UserInformationManager.token, UserInformationManager.connectionId, currentWf-lastWf, new NetworkInformationManager.OnBandwidthUpdateListener() {
+                            @Override
+                            public void onSuccess(String result) {
+                                System.out.println(result);
+                                if (result.equals("false")) {
+                                    lastWf = currentWf;
+                                } else {
+                                    //should disconnect
+                                    Log.d(TAG, "should disconnect!");
 
-                                        if (active) {
-                                            // forget network
-                                            active = false;
-                                            queryBandwidthTimer.cancel();
-                                            wifiManager.removeNetwork(networkID);
-                                            wifiManager.saveConfiguration();
-                                            updateThread.interrupt();
-                                            timerThread.interrupt();
-                                            onBackPressed();
-                                        }
+                                    if (active) {
+                                        // forget network
+                                        active = false;
+                                        queryBandwidthTimer.cancel();
+                                        wifiManager.removeNetwork(networkID);
+                                        wifiManager.saveConfiguration();
+                                        updateThread.interrupt();
+                                        timerThread.interrupt();
+                                        onBackPressed();
                                     }
                                 }
+                            }
 
-                                @Override
-                                public void onNetworkFail() {
-                                    Toast.makeText(getApplicationContext(), "Disconnect from WiFi", Toast.LENGTH_LONG).show();
-                                }
+                            @Override
+                            public void onNetworkFail() {
+                                Toast.makeText(getApplicationContext(), "Disconnect from WiFi", Toast.LENGTH_LONG).show();
+                            }
 
-                                @Override
-                                public void onFail() {
+                            @Override
+                            public void onFail() {
 
-                                }
-                            });
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
+                            }
+                        });
+                    } catch (JSONException e) {
+                        e.printStackTrace();
                     }
+                }
                 }
             };
 
             if(wifiStr == 3){
                 handler1 = new Handler(){
                     public void handleMessage(Message msg1){
-                        super.handleMessage(msg1);
-                        if(msg1.what == 1){
-                            bandwidthUsageHead.setText(new DecimalFormat("00").format(hours) + ":" +
-                                    new DecimalFormat("00").format(minutes) + ":" + new DecimalFormat("00").format(seconds));
-                        }
+                    super.handleMessage(msg1);
+                    if(msg1.what == 1){
+                        bandwidthUsageHead.setText(new DecimalFormat("00").format(hours) + ":" +
+                                new DecimalFormat("00").format(minutes) + ":" + new DecimalFormat("00").format(seconds));
+                    }
                     }
                 };
             }
 
             timerThread = new Thread(new Runnable() {
                 public void run(){
-                    for(int i = 0; ; i++){
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-// TODO Auto-generated catch block
-                            System.out.println("need close thread!");
-                            break;
-                        }
-                        seconds += 5;
-                        Message msg1 = new Message();
-                        msg1.what = 1;
-                        handler1.sendMessage(msg1);
-                        if(seconds == 60){
-                            seconds = 0;
-                            minutes++;
-                            if(minutes == 60){
-                                minutes = 0;
-                                hours++;
-                            }
+                for(int i = 0; ; i++){
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        System.out.println("need close thread!");
+                        break;
+                    }
+                    seconds += 5;
+                    Message msg1 = new Message();
+                    msg1.what = 1;
+                    handler1.sendMessage(msg1);
+                    if(seconds == 60){
+                        seconds = 0;
+                        minutes++;
+                        if(minutes == 60){
+                            minutes = 0;
+                            hours++;
                         }
                     }
+                }
                 }
             });
             timerThread.start();
@@ -345,33 +331,27 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
             updateThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    while(true){
-                        double currentTime = System.currentTimeMillis();
-//  getWifiTraffic(currentTime);
-                        double totalWifi01 = getWifiTraffic(currentTime);;
-                        try {
-                            Thread.sleep(5000);
-                        } catch (InterruptedException e) {
-// TODO Auto-generated catch block
-                            System.out.println("need close thread!");
-                            break;
-                        }
-                        double frontTime = System.currentTimeMillis();
-//  getWifiTraffic(frontTime);
-                        double totalWifi02 = getWifiTraffic(frontTime);
-                        double errorTraffic = totalWifi02 - totalWifi01;
-                        if(errorTraffic < 512){
-                            errorTraffic = 1;
-                        }
-//                        wf += errorTraffic/1111500;
-                        wf += errorTraffic/1050000;
-//                        wf += errorTraffic;
-                        wifiTraffic = df.format(wf);
-//  Log.i("使用的流量", wifiTraffic + "");
-                        Message message = new Message();
-                        message.what = 1;
-                        handler.sendMessage(message);
+                while(true){
+                    double currentTime = System.currentTimeMillis();
+                    double totalWifi01 = getWifiTraffic(currentTime);;
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        System.out.println("need close thread!");
+                        break;
                     }
+                    double frontTime = System.currentTimeMillis();
+                    double totalWifi02 = getWifiTraffic(frontTime);
+                    double errorTraffic = totalWifi02 - totalWifi01;
+                    if(errorTraffic < 512){
+                        errorTraffic = 1;
+                    }
+                    wf += errorTraffic/1050000;
+                    wifiTraffic = df.format(wf);
+                    Message message = new Message();
+                    message.what = 1;
+                    handler.sendMessage(message);
+                }
                 }
             });
             updateThread.start();
@@ -382,6 +362,9 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     }
 
 
+    /**
+     * Show a dialog telling users there have no qualified clients nearby
+     */
     public void showNoClientDialog(){
         LayoutInflater factory = LayoutInflater.from(this);
         AlertDialog.Builder builder=new AlertDialog.Builder(this);
@@ -400,6 +383,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     }
 
 
+    /**
+     * Return network traffic amount
+     * @param time
+     * @return
+     */
     public double getWifiTraffic(double time){
         double rtotalGprs = TrafficStats.getTotalRxBytes();
         double ttotalGprs = TrafficStats.getTotalTxBytes();
@@ -409,7 +397,6 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         double twifi = ttotalGprs - tgprs;
         totalWifi = rwifi + twifi;
         return totalWifi;
-        //totalWifi = rtotalGprs + ttotalGprs;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -496,10 +483,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    public void changeGui(String password) {
-        Log.d(TAG, "password is: " + password);
-    }
 
+    /**
+     * Request connection with a client after click a hotspot item
+     * @param selectedWifi Selected scanResult
+     */
     @Override
     public void onWifiSelected(final ScanResult selectedWifi) {
         boolean isLocked = selectedWifi.capabilities.contains("WEP") || selectedWifi.capabilities.contains("PSK");
@@ -561,6 +549,11 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
     }
 
 
+    /**
+     * If the selected hotspot haven't been connected before,
+     * pop up a dialog to let the user enter password of this hotspot
+     * @param selectedWifi Selected hotspot
+     */
     private void showEditPwdDialog(final ScanResult selectedWifi) {
         View v = LayoutInflater.from(this).inflate(R.layout.dialog_edit_wifi_pwd,null);
         final EditText editText = v.findViewById(R.id.et_password);
@@ -636,20 +629,10 @@ public class ConnectHotspotActivity extends AppCompatActivity implements Recycle
         return wcgID;
     }
 
-    // Animation Effects
-//    public void wifiConnecting(String ssid){
-//        llconnected.setVisibility(View.GONE);
-//        mIvShare.setVisibility(View.GONE);
-//
-//        mCvSate.setVisibility(View.VISIBLE);
-//        mRippleBackground.setVisibility(View.VISIBLE);
-//        mTvName.setText(ssid);
-//        mRippleBackground.startRippleAnimation();
-//        AnimationDrawable ad= (AnimationDrawable) mIvCenter.getDrawable();
-//        ad.start();
-//    }
 
-
+    /**
+     * Dialog to show our charge rate
+     */
     public void showChargeRate() {
         LayoutInflater factory = LayoutInflater.from(this);
         AlertDialog.Builder builder=new AlertDialog.Builder(this);

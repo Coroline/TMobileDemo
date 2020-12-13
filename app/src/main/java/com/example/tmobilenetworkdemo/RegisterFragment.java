@@ -22,18 +22,11 @@ import org.json.JSONException;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link RegisterFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * A fragment to enter register information, including full name, username, password
  */
 public class RegisterFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String TAG = "Register Fragment";
     private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
     private EditText fullName;
     private EditText username;
     private EditText password;
@@ -52,7 +45,6 @@ public class RegisterFragment extends Fragment {
      * @param param2 Parameter 2.
      * @return A new instance of fragment RegisterFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static RegisterFragment newInstance(String param1, String param2) {
         RegisterFragment fragment = new RegisterFragment();
         Bundle args = new Bundle();
@@ -61,15 +53,6 @@ public class RegisterFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
-//    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            mParam1 = getArguments().getString(ARG_PARAM1);
-//            mParam2 = getArguments().getString(ARG_PARAM2);
-//        }
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -86,51 +69,36 @@ public class RegisterFragment extends Fragment {
         registerBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (validateForm()) {
-                    NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
-//                    manager.storeNewUser(username.getText().toString(), password.getText().toString(), fullName.getText().toString(), new NetworkInformationManager.OnRequestHotspotInfoListener() {
-//                        @Override
-//                        public void onSuccess(String password) {
-//                            Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
-//                            UserInformationManager.username = username.getText().toString();
-//                            Intent intent = new Intent();
-//                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-//                            startActivity(intent);
-//                        }
-//
-//                        @Override
-//                        public void onFail() {
-//                            Log.d(TAG, "Incomplete register information.");;
-//                        }
-//                    });
-                    try {
-                        manager.registerUser(fullName.getText().toString(), username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
-                            @Override
-                            public void onSuccess(String token) {
-                                Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
-                                UserInformationManager.token = token;
-                                UserInformationManager.username = username.getText().toString();
-                                Intent intent = new Intent();
-                                intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-                                startActivity(intent);
-                            }
+            if (validateForm()) {
+                NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
+                try {
+                    manager.registerUser(fullName.getText().toString(), username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnRegisterUserListener() {
+                        @Override
+                        public void onSuccess(String token) {
+                            Toast.makeText(getContext(), "Registration Successful!", Toast.LENGTH_LONG).show();
+                            UserInformationManager.token = token;
+                            UserInformationManager.username = username.getText().toString();
+                            Intent intent = new Intent();
+                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+                            startActivity(intent);
+                        }
 
-                            @Override
-                            public void onRegisterFail() {
-                                Toast.makeText(getContext(), "Incomplete register information.", Toast.LENGTH_LONG).show();
-                            }
+                        @Override
+                        public void onRegisterFail() {
+                            Toast.makeText(getContext(), "Incomplete register information.", Toast.LENGTH_LONG).show();
+                        }
 
-                            @Override
-                            public void onNetworkFail() {
-                                Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                } else {
-                    Log.d(TAG, "Incomplete register information.");
+                        @Override
+                        public void onNetworkFail() {
+                            Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                        }
+                    });
+                } catch (JSONException e) {
+                    e.printStackTrace();
                 }
+            } else {
+                Log.d(TAG, "Incomplete register information.");
+            }
             }
         });
 
@@ -138,6 +106,10 @@ public class RegisterFragment extends Fragment {
     }
 
 
+    /**
+     * Check EditText Input
+     * @return
+     */
     private boolean validateForm() {
         boolean valid = true;
 
@@ -166,7 +138,6 @@ public class RegisterFragment extends Fragment {
         }
 
         // Check if the username is unique (already done from server side)
-
         if (pwd.length() < 6) {
             Toast.makeText(getContext(), "Password must be have more than 6 characters.", Toast.LENGTH_LONG).show();
             valid = false;

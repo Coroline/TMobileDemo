@@ -10,6 +10,10 @@ import androidx.viewpager.widget.ViewPager;
 
 import java.util.ArrayList;
 
+
+/**
+ * Activity to combine login and register fragment
+ */
 public class RegisterLoginActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {

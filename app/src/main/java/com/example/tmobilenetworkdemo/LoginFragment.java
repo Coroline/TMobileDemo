@@ -20,18 +20,12 @@ import org.json.JSONException;
 import java.util.Objects;
 
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link LoginFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * Fragment to enter login information including username and password
  */
 public class LoginFragment extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
     private static final String ARG_PARAM2 = "param2";
 
-    // TODO: Rename and change types of parameters
     private EditText username;
     private EditText password;
     private Button loginButton;
@@ -48,7 +42,6 @@ public class LoginFragment extends Fragment {
      * @param param2 Parameter 2.
      * @return A new instance of fragment LoginFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static LoginFragment newInstance(String param1, String param2) {
         LoginFragment fragment = new LoginFragment();
         Bundle args = new Bundle();
@@ -57,15 +50,6 @@ public class LoginFragment extends Fragment {
         fragment.setArguments(args);
         return fragment;
     }
-
-//    @Override
-//    public void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        if (getArguments() != null) {
-//            username = getArguments().getString(ARG_PARAM1);
-//            password = getArguments().getString(ARG_PARAM2);
-//        }
-//    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -79,34 +63,33 @@ public class LoginFragment extends Fragment {
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                // TODO: Check username and password in the backend
-                // If check is successful
-                NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
-                try {
-                    manager.loginUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnLoginListener() {
-                        @Override
-                        public void onSuccess(String token) {
-                            System.out.println(token);
-                            UserInformationManager.username = username.getText().toString();
-                            UserInformationManager.token = token;
-                            Intent intent = new Intent();
-                            intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
-                            startActivity(intent);
-                        }
+            // If check is successful
+            NetworkInformationManager manager = NetworkInformationManager.getInstance(getContext());
+            try {
+                manager.loginUser(username.getText().toString(), password.getText().toString(), new NetworkInformationManager.OnLoginListener() {
+                    @Override
+                    public void onSuccess(String token) {
+                        System.out.println(token);
+                        UserInformationManager.username = username.getText().toString();
+                        UserInformationManager.token = token;
+                        Intent intent = new Intent();
+                        intent.setClass(Objects.requireNonNull(getActivity()), MainActivity.class);
+                        startActivity(intent);
+                    }
 
-                        @Override
-                        public void onNetworkFail() {
-                            Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
-                        }
+                    @Override
+                    public void onNetworkFail() {
+                        Toast.makeText(getContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                    }
 
-                        @Override
-                        public void onAuthFail() {
-                            Toast.makeText(getContext(), "Incorrect username or password. Try again", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                    @Override
+                    public void onAuthFail() {
+                        Toast.makeText(getContext(), "Incorrect username or password. Try again", Toast.LENGTH_LONG).show();
+                    }
+                });
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
             }
         });
 

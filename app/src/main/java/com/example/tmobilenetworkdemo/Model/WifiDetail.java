@@ -1,5 +1,9 @@
 package com.example.tmobilenetworkdemo.Model;
 
+
+/**
+ * Model to information of a Wi-Fi
+ */
 public class WifiDetail {
     private String SSID;
     private String BSSID;

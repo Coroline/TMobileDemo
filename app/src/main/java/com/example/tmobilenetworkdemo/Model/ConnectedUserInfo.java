@@ -1,5 +1,8 @@
 package com.example.tmobilenetworkdemo.Model;
 
+/**
+ * Model to store information of each connected user with a specific client
+ */
 public class ConnectedUserInfo {
     private String username;
     private int connectionId;

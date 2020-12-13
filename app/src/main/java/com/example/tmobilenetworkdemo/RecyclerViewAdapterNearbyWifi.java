@@ -28,6 +28,10 @@ import com.example.tmobilenetworkdemo.Wifi.WifiAdmin;
 
 import java.util.List;
 
+
+/**
+ * RecyclerViewAdapter for nearby qualified hotspot list
+ */
 public class RecyclerViewAdapterNearbyWifi extends RecyclerView.Adapter<RecyclerViewAdapterNearbyWifi.ViewHolder> {
     private static final String TAG = "RecyclerViewNearbyWifi";
 

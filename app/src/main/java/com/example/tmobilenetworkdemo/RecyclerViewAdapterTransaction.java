@@ -18,6 +18,10 @@ import com.example.tmobilenetworkdemo.Model.User;
 import java.text.DecimalFormat;
 import java.util.List;
 
+
+/**
+ * RecyclerViewAdapter for transaction history list
+ */
 public class RecyclerViewAdapterTransaction extends RecyclerView.Adapter<RecyclerViewAdapterTransaction.ViewHolder> {
     private static final String TAG = "RecyclerViewAdapterTransaction";
 
@@ -44,9 +48,7 @@ public class RecyclerViewAdapterTransaction extends RecyclerView.Adapter<Recycle
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, final int position) {
         Log.d(TAG, "recycler wifi adapter called");
-        // TODO: Format timestamp
         holder.date.setText(mTransactionItem.get(position).getTimeStamp());
-
         String user = mTransactionItem.get(position).getUserName();
         String client = mTransactionItem.get(position).getClientName();
         double credit = mTransactionItem.get(position).getTotalCreditTransferred();

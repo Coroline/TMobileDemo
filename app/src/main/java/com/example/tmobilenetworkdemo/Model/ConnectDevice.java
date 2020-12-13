@@ -1,5 +1,9 @@
 package com.example.tmobilenetworkdemo.Model;
 
+
+/**
+ * Model to store information of a connected device with a Wi-Fi
+ */
 public class ConnectDevice {
     private String ip;
     private String mac;

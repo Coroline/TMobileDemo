@@ -6,9 +6,10 @@ import android.content.Intent;
 import android.net.wifi.WifiManager;
 import android.util.Log;
 
-
+/**
+ * BroadcastReceiver about whether the hotspot AP is turned on
+ */
 public class HotSpotIntentReceiver extends BroadcastReceiver {
-
     private final static String TAG = HotSpotIntentReceiver.class.getSimpleName();
 
     @Override
@@ -20,10 +21,10 @@ public class HotSpotIntentReceiver extends BroadcastReceiver {
                 int apState = intent.getIntExtra(WifiManager.EXTRA_WIFI_STATE, 0);
                 if (apState == 13) {
                     // Hotspot AP is enabled
-                    Log.d("shenjianan", "ap turn on");
+                    Log.d(TAG, "ap turn on");
                 } else {
                     // Hotspot AP is disabled/not ready
-                    Log.d("shenjianan", "ap turn off");
+                    Log.d(TAG, "ap turn off");
                 }
             }
         }

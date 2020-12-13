@@ -321,3 +321,7 @@ public class WifiHotUtil {
     }
 }
 
+/**
+ * Reference: https://github.com/biloba123/WifiSharing2
+ */
+

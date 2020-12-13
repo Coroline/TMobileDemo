@@ -38,9 +38,10 @@ import org.json.JSONException;
 
 import java.text.ParseException;
 
-
+/**
+ * Activity to let a client create a new hotspot
+ */
 public class CreateHotspotActivity extends AppCompatActivity {
-
     private Button createHotspot;
     private EditText SSID;
     private EditText password;
@@ -104,93 +105,61 @@ public class CreateHotspotActivity extends AppCompatActivity {
         createHotspot.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                MyOnStartTetheringCallback callback = new MyOnStartTetheringCallback() {
-//                    @Override
-//                    public void onTetheringStarted() {
-//                        runOnUiThread(new Runnable() {
-//                            public void run() {
-//                                Toast.makeText(getApplicationContext(), "Successfully create a hotspot." , Toast.LENGTH_LONG).show();
-//                                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
-//                                Bundle bundle = new Bundle();
-//                                bundle.putString("hotspotName", SSID.getText().toString());
-//                                i.putExtra("data", bundle);
-//                                startActivity(i);
-//                            }
-//                        });
-//                    }
-//
-//                    @Override
-//                    public void onTetheringFailed() {
-//                        runOnUiThread(new Runnable() {
-//                            public void run() {
-//                                Toast.makeText(getApplicationContext(), "Fail to create a hotspot." , Toast.LENGTH_LONG).show();
-//                            }
-//                        });
-//                    }
-//                };
-//                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
-//                    mWifiHotUtil.turnOnWifiApAsync(SSID.getText().toString(), password.getText().toString(), WifiHotUtil.WifiSecurityType.WIFICIPHER_WPA2, callback);
-//                } else {
-//                    mWifiHotUtil.hotspotOreo(true, callback);
-//                }
-                // todo: register information
-                if(isNumeric(bandwidthAmount.getText().toString()) && isNumeric(sharingDuration.getText().toString())) {
-                    NetworkInformationManager.OnStartSharingListener callback = new NetworkInformationManager.OnStartSharingListener() {
-                        @Override
-                        public void onSuccess(String result) {
-                            runOnUiThread(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
-                                    Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
-                                    Bundle bundle = new Bundle();
-                                    bundle.putString("hotspotName", SSID.getText().toString());
-                                    i.putExtra("data", bundle);
-                                    startActivity(i);
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onNetworkFail() {
-                            runOnUiThread(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-
-                        @Override
-                        public void onFail() {
-                            runOnUiThread(new Runnable() {
-                                public void run() {
-                                    Toast.makeText(getApplicationContext(), "unknown error", Toast.LENGTH_LONG).show();
-                                }
-                            });
-                        }
-                    };
-                    try {
-                        // todo: change to real location
-                        networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), 0.0, 0.0, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    } catch (NumberFormatException e) {
-                        e.printStackTrace();
-                        Toast.makeText(getApplicationContext(), "Parse error! Please check your input!", Toast.LENGTH_LONG).show();
+            if(isNumeric(bandwidthAmount.getText().toString()) && isNumeric(sharingDuration.getText().toString())) {
+                NetworkInformationManager.OnStartSharingListener callback = new NetworkInformationManager.OnStartSharingListener() {
+                    @Override
+                    public void onSuccess(String result) {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Successfully register a hotspot.", Toast.LENGTH_LONG).show();
+                                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
+                                Bundle bundle = new Bundle();
+                                bundle.putString("hotspotName", SSID.getText().toString());
+                                i.putExtra("data", bundle);
+                                startActivity(i);
+                            }
+                        });
                     }
 
-//                Intent i = new Intent(CreateHotspotActivity.this, CreatedHotspotInformationActivity.class);
-//                Bundle bundle = new Bundle();
-//                bundle.putString("hotspotName", SSID.getText().toString());
-//                i.putExtra("data", bundle);
-//                startActivity(i);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Duration and bandwidth amount must be integers. Please enter your settings again.", Toast.LENGTH_LONG).show();
+                    @Override
+                    public void onNetworkFail() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Network Error!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFail() {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "unknown error", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
+                };
+                try {
+                    networkInformationManager.registerWifiInfo(SSID.getText().toString(), password.getText().toString(), 0.0, 0.0, Double.parseDouble(bandwidthAmount.getText().toString()), Integer.parseInt(sharingDuration.getText().toString()), callback);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(), "Parse error! Please check your input!", Toast.LENGTH_LONG).show();
                 }
+            } else {
+                Toast.makeText(getApplicationContext(), "Duration and bandwidth amount must be integers. Please enter your settings again.", Toast.LENGTH_LONG).show();
+            }
             }
         });
     }
 
 
+    /**
+     * EditText view input check
+     * @param str Entered string
+     * @return Whether the entered string is legal or not
+     */
     public boolean isNumeric(String str){
         for (int i = 0; i < str.length(); i++){
             if (!Character.isDigit(str.charAt(i))){
@@ -201,6 +170,9 @@ public class CreateHotspotActivity extends AppCompatActivity {
     }
 
 
+    /**
+     * Check location permission
+     */
     @RequiresApi(api = Build.VERSION_CODES.M)
     private void requestPermissions() {
         if (getApplicationContext().checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -208,6 +180,7 @@ public class CreateHotspotActivity extends AppCompatActivity {
                     new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
+
 
     /**
      * Use Android's stack to take user to the previous screen.

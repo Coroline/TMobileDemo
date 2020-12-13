@@ -2,8 +2,6 @@ package com.example.tmobilenetworkdemo.Wifi;
 
 /**
  * ScanResult class store wifi information via scan
- * 数据成员：
- *
  * public String      BSSID
  * public String      SSID
  * public String      capabilities      Network performance (authentication supported by access points, key management, encryption mechanisms...)
@@ -11,8 +9,6 @@ package com.example.tmobilenetworkdemo.Wifi;
  * public int            level          signal intensity
  *
  */
-
-
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -26,9 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * WifiConfiguration类获取网络配置
- * 6个子类：
- *
+ * WifiConfiguration
  * AuthAlgorithm        get IEEE 802.11 encryption method
  * PairwiseCipher         WPA key pair
  * Protocol               Encryption protocol
@@ -68,13 +62,11 @@ public class WifiAdmin {
     //Wifi configuration list (with pwd)
     private List<WifiConfiguration> mWifiConfigedSpecifiedList=new ArrayList<>();
 
-    //网络状态
     private NetworkInfo.State mState;
 
 
     /**
      * Constructor
-     *
      * @param context
      */
     public WifiAdmin(Context context){
@@ -189,7 +181,6 @@ public class WifiAdmin {
 
     //scan nearby network
     public void scan(){
-        //开始扫描
         mWifiManager.startScan();
     }
 
@@ -226,7 +217,6 @@ public class WifiAdmin {
         if (mStringBuffer != null) {
             mStringBuffer=new StringBuffer();
         }
-//        scan();
         if (mScanResultList != null) {
             for (int i = 0; i < mScanResultList.size(); i++) {
                 mScanResult=mScanResultList.get(i);
@@ -244,19 +234,16 @@ public class WifiAdmin {
         return mStringBuffer.toString();
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
     public void disconnectWifi(){
         //get net ID
-        int netId=getNetWorkId();
+        int netId = getNetWorkId();
         //Set the network to be unavailable
         mWifiManager.disableNetwork(netId);
         mWifiManager.disconnect();
         mWifiInfo=null;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     public void acquireWifiLock(){
         mWifiLock.acquire();
     }
@@ -268,10 +255,9 @@ public class WifiAdmin {
     }
 
     public void creatWifiLock(){
-        mWifiLock=mWifiManager.createWifiLock("WifiSharing");
+        mWifiLock = mWifiManager.createWifiLock("WifiSharing");
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public List<WifiConfiguration> getWifiConfigurationList() {
         return mWifiConfigurationList;
@@ -292,7 +278,6 @@ public class WifiAdmin {
                 true);
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public int getNetWorkId(){
         return (mWifiInfo==null)?0:mWifiInfo.getNetworkId();
@@ -322,56 +307,12 @@ public class WifiAdmin {
         return mWifiInfo;
     }
 
-    /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     public int addNetwork(WifiConfiguration wcg){
-//        return wcgID;
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//            mConnectivityManager.requestNetwork(new NetworkRequest.Builder()
-//            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-//            .setNetworkSpecifier(wcg.SSID)
-//            .build(),
-//                    new ConnectivityManager.NetworkCallback(){
-//                        @Override
-//                        public void onAvailable(Network network) {
-//                            super.onAvailable(network);
-//                        }
-//                    });
-//        }else {
-//            disconnectWifi();
         int wcgID=mWifiManager.addNetwork(wcg);
         mWifiManager.enableNetwork(wcgID,true);
-//            mWifiManager.saveConfiguration();
-//            mWifiManager.reconnect();
-//        }
-
-//        for (WifiConfiguration configuration : mWifiConfigurationList) {
-//            Log.d(TAG, "addNetwork: "+configuration.SSID);
-//        }
-//        Log.d(TAG, "addNetwork: ------------------------------------------");
-//        for (WifiConfiguration configuration : mWifiConfigedSpecifiedList) {
-//            Log.d(TAG, "addNetwork: "+configuration.SSID);
-//        }
-//        if (isExsits(wcg.SSID) == null) {
-//            Log.d(TAG, "addNetwork: XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
-//        }
-//        boolean state=false;
-//        if (mWifiManager.setWifiEnabled(true)) {
-//            mWifiConfigurationList=mWifiManager.getConfiguredNetworks();
-//            for(Iterator<WifiConfiguration> iterator=mWifiConfigurationList.iterator();iterator.hasNext();){
-//                WifiConfiguration c=iterator.next();
-//                if (c.SSID.equals(wcg.SSID)) {
-//                    state=mWifiManager.enableNetwork(c.networkId,true);
-//                }else {
-//                    mWifiManager.disableNetwork(c.networkId);
-//                }
-//                mWifiManager.reconnect();
-//            }
-//        }
         return wcgID;
-
     }
-
 
     //create Wifi hotspot
     public int connectWifi(String SSID, String Password, int Type) {
@@ -423,7 +364,6 @@ public class WifiAdmin {
             wifiConfig.preSharedKey = "\"".concat(Password).concat("\"");
         }
 
-
         //connect
         int wcgID = mWifiManager.addNetwork(wifiConfig);
         mWifiManager.enableNetwork(wcgID,true);
@@ -471,3 +411,7 @@ public class WifiAdmin {
         return true;
     }
 }
+
+/**
+ * Reference: https://github.com/biloba123/WifiSharing2
+ */

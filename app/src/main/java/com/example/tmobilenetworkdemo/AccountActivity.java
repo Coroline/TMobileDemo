@@ -21,8 +21,11 @@ import org.json.JSONException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.SimpleTimeZone;
 
+
+/**
+ * Activity to show account information including username, total credit and transaction history
+ */
 public class AccountActivity extends AppCompatActivity implements RecyclerViewAdapterTransaction.onTransactionSelectedListener {
 
     private TextView username;
@@ -90,22 +93,19 @@ public class AccountActivity extends AppCompatActivity implements RecyclerViewAd
         } catch (JSONException e) {
             e.printStackTrace();
         }
-//        transactionList.add(new TransactionInfo("1", "user", "client", 12.2, 120.0, 1000, "Dec 3, 2020"));
-//        transactionList.add(new TransactionInfo("2", "user", "client", 12.3, 130.0, 1045, "Dec 7, 2020"));
-//        transactionList.add(new TransactionInfo("3", "client", "user", 12.4, 140.0, 1023, "Dec 18, 2020"));
-//        initRecyclerView(transactionList);
     }
 
 
     // Recycler View
     private void initRecyclerView(List<TransactionInfo> transactionHistory) {
         RecyclerView recyclerView = findViewById(R.id.transaction_history);
-//        System.out.println(transactionHistory.get(1).getTimeStamp());
         RecyclerViewAdapterTransaction adapter = new RecyclerViewAdapterTransaction(transactionHistory, this);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+
+    // Show a dialog about each transaction details
     @Override
     public void onTransactionSelected(TransactionInfo selectedTransaction) {
         LayoutInflater factory = LayoutInflater.from(this);
@@ -124,7 +124,6 @@ public class AccountActivity extends AppCompatActivity implements RecyclerViewAd
         userName.setText(String.valueOf(selectedTransaction.getUserName()));
         clientName.setText(String.valueOf(selectedTransaction.getClientName()));
         bandwidthTransferred.setText(selectedTransaction.getTotalBandwidthUsage() + " MB");
-        // TODO: May need to change duration from second to minutes or hours
         duration.setText(selectedTransaction.getTotalDuration() + " s");
         builder.setPositiveButton("OK", null);
         AlertDialog dialog=builder.create();

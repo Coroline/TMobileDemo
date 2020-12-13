@@ -17,10 +17,11 @@ import android.provider.Settings;
 
 import androidx.core.app.ActivityCompat;
 
-import com.example.tmobilenetworkdemo.CreateHotspotActivity;
-import com.example.tmobilenetworkdemo.CreatedHotspotInformationActivity;
 import com.example.tmobilenetworkdemo.MainActivity;
 
+/**
+ * Service to get and update current location
+ */
 public class GPSTracking extends Service implements LocationListener {
 //    private final Context mContext;
 
@@ -29,8 +30,6 @@ public class GPSTracking extends Service implements LocationListener {
     private boolean canGetLocation = false;
 
     Location mLocation;
-    //    private double lat;
-//    private double lng;
     public static double lat;
     public static double lng;
 
@@ -104,11 +103,8 @@ public class GPSTracking extends Service implements LocationListener {
 
     public void showAlertDialog() {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(this);
-
         alertDialog.setTitle("GPS is settings");
-
         alertDialog.setMessage("GPS is not enabled. Do you want go to settings menu?");
-
         alertDialog.setPositiveButton("Settings", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -125,11 +121,6 @@ public class GPSTracking extends Service implements LocationListener {
         });
 
         alertDialog.show();
-    }
-
-
-    public String getAuthorName() {
-        return "Yawei Zhang";
     }
 
 
@@ -150,7 +141,6 @@ public class GPSTracking extends Service implements LocationListener {
     public void onLocationChanged(Location location) {
         lat = location.getLatitude();
         lng = location.getLongitude();
-        System.out.println("''''''''''''''''''''''''''''''''''" + lat + " " + lng);
         Intent i = new Intent(this, MainActivity.class);
         Bundle bundle = new Bundle();
         bundle.putString("lat", String.valueOf(lat));

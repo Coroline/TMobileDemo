@@ -34,6 +34,11 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+
+/**
+ * Activity for a client after he create a hotspot, show information including:
+ * Hotspot SSID, total bandwidth usage and credit usage, connected users list
+ */
 public class CreatedHotspotInformationActivity extends AppCompatActivity implements RecyclerViewAdapterConnectedUser.onConnUserSelectedListener {
     private static long queryDelay = 5000;
     private static long queryInterval = 5000;
@@ -51,6 +56,10 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     private Timer updateLocationTimer;
     private static final String TAG = "CreatedHotspotInformationActivity";
 
+
+    /**
+     * Timer to get latest bandwidth and credit usage every 5 seconds
+     */
     private class QueryTimerTask extends TimerTask {
         @Override
         public void run() {
@@ -95,6 +104,7 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
             }
         }
     }
+
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -154,10 +164,12 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     }
 
 
+    /**
+     * Timer to update client's location every 5 seconds
+     */
     class MyTask extends TimerTask {
         @Override
         public void run() {
-            System.out.println("New location: " + GPSTracking.lat + " " + GPSTracking.lng);
             if(GPSTracking.lat != 0.0 && GPSTracking.lng != 0.0) {
                 try {
                     manager.updateClientLocation(UserInformationManager.token, GPSTracking.lat, GPSTracking.lng, new NetworkInformationManager.OnClientLocationUpdateListener() {
@@ -196,14 +208,25 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
     }
 
+    /**
+     * Start query bandwidth and credit usage timer
+     * @param delay
+     * @param interval
+     */
     private void startQueryUsage(long delay, long interval) {
         queryUsageTimer.schedule(new QueryTimerTask(), delay, interval);
     }
+
 
     private void stopQueryUsage() {
         queryUsageTimer.cancel();
     }
 
+
+    /**
+     * Show a dialog after the client clicked a connected user item
+     * @param selectedConnUser Selected user item
+     */
     @Override
     public void onConnUserSelected(final ConnectedUserInfo selectedConnUser) {
         LayoutInflater factory = LayoutInflater.from(this);
@@ -265,11 +288,15 @@ public class CreatedHotspotInformationActivity extends AppCompatActivity impleme
     }
 
 
+    /**
+     * Disconnect selected user
+     * @param connectedUserInfo Class to store connected user's information with this hotspot
+     * @throws JSONException
+     */
     public void disconnectUser(ConnectedUserInfo connectedUserInfo) throws JSONException {
         manager.disconnectUser(UserInformationManager.token, connectedUserInfo.getConnectionId(), new NetworkInformationManager.OnDisconnectUserListener() {
             @Override
             public void onSuccess(Boolean status) {
-                // TODO: Disconnect User
                 if(status) {
                     Log.d(TAG, "Client disconnection is successful.");
                 } else {

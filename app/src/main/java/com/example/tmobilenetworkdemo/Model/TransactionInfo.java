@@ -1,5 +1,9 @@
 package com.example.tmobilenetworkdemo.Model;
 
+
+/**
+ * Model to store information of each transaction item for a specific user/client
+ */
 public class TransactionInfo {
     private String sessionID;
     private String userName;

@@ -28,6 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Class for all network calls with web server
+ */
 public class NetworkInformationManager {
     private static final String TAG = "NetworkInformationManager";
 
@@ -56,7 +59,6 @@ public class NetworkInformationManager {
     }
 
     public interface OnRequestConnectionListener {
-        // change GUI
         void onSuccess(String password, int connectionId);
 
         void onNetworkFail();
@@ -170,6 +172,16 @@ public class NetworkInformationManager {
         return sInstance;
     }
 
+
+    /**
+     * User requests a network connection with a client to use his bandwidth resources
+     * @param token User identifier
+     * @param clientUsername Username of the client
+     * @param bandwidth Bandwidth amount that the user wants
+     * @param duration Duration that the user wants
+     * @param l Event listener
+     * @throws JSONException
+     */
     public void requestConnection(final String token, final String clientUsername, final double bandwidth, final int duration, final OnRequestConnectionListener l) throws JSONException{
         /*
         {
@@ -225,6 +237,18 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
+
+    /**
+     * After a client create a hotspot, add this new hotspot's information into the web server
+     * @param ssid SSID of new hotspot
+     * @param password password of new hotspot
+     * @param latitude Latitude of the client location
+     * @param longitude Longitude of the client location
+     * @param bandwidth Bandwidth amount that the client would like to share with users
+     * @param duration Duration that the client would like to share with users
+     * @param l Event listener
+     * @throws JSONException
+     */
     public void registerWifiInfo(final String ssid, final String password, final double latitude, final double longitude, final double bandwidth, final int duration, final OnStartSharingListener l) throws JSONException {
         /*
         {
@@ -290,6 +314,17 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
+
+    /**
+     * Return a list of nearby qualified clients for the user
+     * @param token User identifier
+     * @param latitude latitude of the user's current location
+     * @param longitude Longitude of the user's current location
+     * @param bandwidth Max bandwidth amount that the user would like to consume
+     * @param duration Max duration that the user want to connect with a client
+     * @param l Event listener
+     * @throws JSONException
+     */
     public void findClients(final String token, final double latitude, final double longitude, final int bandwidth, final int duration, final OnFindClientsListener l) throws JSONException{
         /*
         {
@@ -494,8 +529,6 @@ public class NetworkInformationManager {
     public void updateClientLocation(final String token, final double lat, final double lng, final OnClientLocationUpdateListener l) throws JSONException {
         JSONObject location = new JSONObject();
         JSONObject jsonObject = new JSONObject();
-//        location.put("latitude", String.valueOf(lat));
-//        location.put("longitude", String.valueOf(lng));
         location.put("latitude", "0");
         location.put("longitude", "0");
         jsonObject.put("location", location);
@@ -868,6 +901,14 @@ public class NetworkInformationManager {
         requestQueue.add(jsonRequest);
     }
 
+
+    /**
+     * Return the bandwidth amount given a network connection ID
+     * @param token User identifier
+     * @param connectionId Network connection ID
+     * @param l
+     * @throws JSONException
+     */
     public void queryConnectionBandwidthUsage(final String token, final int connectionId, final OnConnectionBandwidthUsageListener l) throws JSONException {
         JSONObject jsonObject = new JSONObject();
         jsonObject.put("token", token);
